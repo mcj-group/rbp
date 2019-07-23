@@ -138,6 +138,10 @@ If the graph $G$ is a tree, the algorithm is guaranteed to converge eventually a
         \psi_{ij}(x,y) = \begin{cases} e^{\alpha_{ij}}, & x = y \\1 & x \ne y. \end{cases}
     \end{equation*}
 \end{itemize}
+One possible way to generate models like this is to choose the parameters $\alpha_{ij}$ and $\beta_i$ uniformly at random from an interval $[C, -C]$ for some constant $C$. Sutton et al.~\cite{Sutton:2007:IDS:3020488.3020534} uses Potts model with $C = 5$, while Knoll et al.~\cite{10.1007/978-3-319-23525-7_18} uses Ising model with $C = N/2$.
+
+(These formulations of Ising and Potts models should be equivalent?)
+
 
 \section{Convergence}
 
