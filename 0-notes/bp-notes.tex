@@ -1,0 +1,180 @@
+\documentclass[11pt,a4paper]{article}
+\pdfoutput=1
+
+% rubber: module pdftex
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,booktabs,color,doi,graphicx,latexsym,url,xcolor,xspace}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{microtype,hyperref}
+\usepackage{eucal}
+\usepackage[inline]{enumitem}
+\setlist[itemize]{label=--}
+\setlist[enumerate]{label=(\arabic*),labelindent=\parindent,leftmargin=*}
+
+\definecolor{citecolor}{HTML}{0000C0}
+\definecolor{urlcolor}{HTML}{000080}
+
+% make math in section titles bold
+\usepackage{sectsty}
+\allsectionsfont{\boldmath}
+
+
+
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+
+\newcommand{\namedref}[2]{\hyperref[#2]{#1~\ref*{#2}}}
+\newcommand{\sectionref}[1]{\namedref{Section}{#1}}
+\newcommand{\figureref}[1]{\namedref{Figure}{#1}}
+\newcommand{\tableref}[1]{\namedref{Table}{#1}}
+\newcommand{\equationref}[1]{\hyperref[#1]{Eq~(\ref*{#1})}}
+\newcommand{\theoremref}[1]{\hyperref[#1]{Theorem~\ref*{#1}}}
+\newcommand{\lemmaref}[1]{\hyperref[#1]{Lemma~\ref*{#1}}}
+\newcommand{\remarkref}[1]{\hyperref[#1]{Remark~\ref*{#1}}}
+
+\newcommand{\Reals}{\mathbb{R}}
+\newcommand{\R}{\mathcal{R}}
+\newcommand{\M}{\mathcal{M}}
+\newcommand{\N}{\mathcal{N}}
+
+\newcommand{\range}{E}
+
+\newcommand{\size}[1]{\left| #1 \right|}
+\newcommand{\norm}[1]{\lVert #1 \rVert}
+
+
+
+
+\newcommand{\myitem}{\ \ $\cdot$ }
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    citecolor=citecolor,
+    filecolor=black,
+    urlcolor=urlcolor,
+}
+
+\begin{document}
+    
+\section{Model}
+
+\subsection{Propagation algorithms}
+
+\paragraph{Update rules.}
+We formulate iterative algorithms in a framework described next, adapting the notation of Elidan et al.~\cite{elidan2006residual}.
+
+Let $\M = \{ 1, 2, \dotsc, M \}$ be index set for messages (\emph{message space}) and let $\R \subseteq \Reals^d$ be set from which messages take values. The \emph{update rules} for the messages are given by functions
+\[ f_m \colon \R^M \to \R, \qquad m \in \M\,.\]
+The general goal is to obtain (an approximation of) a fixed point $z^* \in \R^m$, that is, a point $z^*$ that satisfies $f_m(z^*) = z^*$ for all $m \in \M$.
+
+The \emph{synchronous update} rule $F \colon \R^M \to \R^M$ is defined via the iterative application of the update rules to all coordinates simultaneously, that is, 
+\[ F(x) = \bigl( f_1(x), f_2(x), \dotsc, f_M(x) \bigr)\,.\]
+% That is, give a previous value $x^{i} \in \R^M$, the new value $x^{i+1}$ is obtained as
+% \[ (x^{i+1}_1, \dots, x^{i+1}_M) = \bigl(f(x^{i}_1), \dots, f(x^{i}_M) \bigr)\,.\]
+For a set $\N \subseteq \M$, we define the \emph{partial update} rule $F_\N \colon \R^M \to \R^M$ by
+\[ F_{\N}(x)_m = 
+\begin{cases}
+f_m(x) & \text{ if $m \in \N$, and}\\
+x_m & \text{ otherwise.}
+\end{cases} \]
+For singleton sets $\N = \{ m\}$, we write $F_\N = F_m$.
+
+\paragraph{Schedules.} The \emph{synchronous propagation schedule} is defined repeatedly applying the synchronous update rule $F$ to an arbitrary starting value $x^0 \in \R^M$. This gives a sequence of points
+\[ x^0,\qquad x^1 = F(x^0),\qquad x^2 = F(x^1) = F(F(x^0)),\qquad \dotsc\]
+An \emph{asynchronous propagation schedule} is given by a sequence of sets $\N_1, \N_2, \dotsc \subseteq \M$. This gives a sequence of values $x^0, x^1, x^2, \dotsc$ defined by the rule
+\[ x^{i+1} = F_{\N_i}(x^i)\,.\]
+
+\begin{remark}
+Natural way to interpret these schedules is that an elementary step of the algorithm corresponds to a single $\N_i$. However, for algorithms like residual splash~\cite{pmlr-v5-gonzalez09a}, a single scheduled step of the algorithm consists of a sequence $\N_i, \N_{i+1}, \dotsc, \N_{i+k}$ of updates.
+\end{remark}
+
+\subsection{Belief propagation.}
+
+We'll discuss belief propagation formulated on Markov random field as a concrete example.
+
+\paragraph{Markov random fields.} Let $X_1, X_2, \dotsc, X_n$ be random variables, and assume each $X_i$ takes values from set $\range_i$. A \emph{Markov random field} over these variables is given by a graph $G = (V,E)$ with $V = \{ 1, 2, \dotsc, n \}$ and the \emph{factors}
+\begin{align}
+    \psi_{i} & \colon \range_i \to \Reals^+ && \text{for $i \in V$,}\\
+    \psi_{ij} & \colon \range_i \times \range_j \to \Reals^+ && \text{for $\{i, j\} \in E$.}
+\end{align}
+A Markov random field defines a probability distribution on $(X_1, X_2, \dotsc, X_n)$ via
+\[ \Pr\bigl[ (X_1, X_2, \dotsc, X_n) = (x_1, x_2, \dotsc, x_n) \bigr] \propto \prod_{i} \psi_i(x_i) \prod_{ij} \psi_{ij}(x_i, x_j) \,.\]
+
+\paragraph{Marginalisation.} In \emph{marginalisation}, we are given a Markov random field as an input, and the task to compute the probabilities
+\[ \Pr[ X_i = x ] = \sum_{\substack{ (x_1,\dotsc, x_n) \\ x_i = x}} \Pr\bigl[ (X_1, X_2, \dotsc, X_n) = (x_1, x_2, \dotsc, x_n)\bigr]\,, \qquad x \in \range_i\,,\]
+for specified variables $X_i$, either exactly or approximately.
+
+\paragraph{Belief propagation.} \emph{Belief propagation} is a propagation algorithm for approximating the marginals of a Markov random field, defined as follows. We have a \emph{message} $\mu_{i \to j} \colon \range_j \to \Reals$ for each ordered pair $(i,j)$ such that $\{ i,j \} \in E$. The update rules for messages are given by
+\[ \mu_{i \to j}(x_j) \propto \sum_{x_i \in \range_i} \psi_i(x_i)\psi_{ij}(x_i,x_j) \prod_{k \in N(j)\setminus \{ j \}} \mu_{k \to i} (x_i)\,.\] 
+The belief propagation algorithm applies these update rules according to an arbitrary schedule, and then estimates the marginals as
+\[ \Pr[ X_i = x_i ] \propto \psi_i(x_i) \prod_{j \in N(i)} \mu_{j \to i}(x_i)\,.\]
+If the graph $G$ is a tree, the algorithm is guaranteed to converge eventually assuming all messages are updated infinitely often, and the estimates give the exact marginals. For non-tree $G$, the algorithm may not converge, or it may give wrong estimates even if it converges.
+
+\paragraph{Example schedules.} The following papers consider various asynchronous schedules for belief propagation.
+\begin{itemize}[noitemsep]
+    \item Residual BP: \cite{elidan2006residual}
+    \item Variants of residual BP: \cite{10.1007/978-3-319-23525-7_18, Sutton:2007:IDS:3020488.3020534}
+    \item Residual splash: \cite{pmlr-v5-gonzalez09a}
+\end{itemize}
+
+\paragraph{Example models.} The \emph{Ising} and \emph{Potts} models can be interpreted as Markov random fields. The underlying graph $G$ for both models is a $N \times N$ grid graph. The rest of the model is constructed as follows:
+\begin{itemize}
+    \item \emph{Ising model.} All variables have range $\range_{i} = \{ -1, 1 \}$. The factors are
+    \begin{equation*}
+        \psi_i(x) = e^{\beta_{i} x}, \qquad\qquad
+        \psi_{ij}(x,y) = e^{\alpha_{ij}xy}.
+    \end{equation*}
+    \item \emph{Potts model.} All variables have range $\range_{i} = \{ 0, 1 \}$. The factors are
+    \begin{equation*}
+        \psi_i(x) = \begin{cases} e^{\beta_{i}}, & x = 1 \\1 & x = 0, \end{cases} \qquad\qquad
+        \psi_{ij}(x,y) = \begin{cases} e^{\alpha_{ij}}, & x = y \\1 & x \ne y. \end{cases}
+    \end{equation*}
+\end{itemize}
+
+\section{Convergence}
+
+\subsection{Preliminaries}
+
+Following \cite{elidan2006residual}, let $\norm{\cdot}$ be an arbitrary norm on the space of message values $\R \subseteq \Reals^d$, and let $\norm{\cdot}_\infty$ denote the max norm on $\R^M$, that is, 
+\[ \norm{x}_\infty = \max_{i}\  \norm{x_i}\,.\]
+We say that a function $F \colon \R^M \to \R^M$ is a \emph{$\norm{\cdot}_\infty$-contraction} if
+\[ \norm{ F(x) - F(y)}_{\infty} \le \alpha \norm{x - y}_\infty \]
+for some $0 < \alpha < 1$. Note that if $F$ is a $\norm{\cdot}_\infty$-contraction, then it has a unique fixed point $z^*$, and $\norm{ F(x) - z^*}_{\infty} \le \alpha \norm{x - z^*}_\infty$.
+
+\subsection{General graphs}
+
+\begin{theorem}
+Assume we have a set of update rules $f_m$ such that the synchronous propagation schedule $F$ is a $\norm{\cdot}_\infty$-contraction, and let $\N_1, \N_2, \dotsc$ be an asynchronous schedule such that each message appears in the schedule infinitely often. Then the asynchronous schedule $\N_1, \N_2, \dotsc$ converges to the unique fixed point.
+\end{theorem}
+
+Elidan et al.~\cite{elidan2006residual} claims that this follows from \cite{Bertsekas1983} directly; however, the latter does not have the setting with the inner `message' norms, so this probably should be checked carefully.
+
+\begin{theorem}
+Assume we have a set of update rules $f_m$ such that the synchronous propagation schedule $F$ is a $\norm{\cdot}_\infty$-contraction, let $(\N_i)^{i = 1}_\infty$ be an asynchronous schedule, and let $(\N'_i)^{i = 1}_\infty$ be a $k$-relaxed version of $(\N_i)^{i = 1}_\infty$. If $(\N_i)^{i = 1}_\infty$ converges in $T$ steps, then $(\N'_i)^{i = 1}_\infty$ converges in $kT$ steps.
+\end{theorem}
+
+\begin{proof}
+(Sketch) At least every $k$th step is from the original schedule, and the contraction property of the synchronous schedule should imply that `wrong' choices in the relaxed schedule cannot move the values further away from the fixed point. (Compare with \cite{elidan2006residual}.)
+\end{proof}
+
+\subsection{Trees}
+
+[[Follow the $\Delta$-stepping style analysis for relaxed exact schedule. Approximate BP on trees ala.~\cite{pmlr-v5-gonzalez09a}?]]
+
+\DeclareUrlCommand{\Doi}{\urlstyle{same}}
+\renewcommand{\doi}[1]{\href{http://dx.doi.org/#1}{\footnotesize\sf doi:\Doi{#1}}}
+
+\bibliographystyle{plainnat}
+\bibliography{bp}
+
+
+\end{document}
+
