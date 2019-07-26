@@ -3,9 +3,8 @@ package bp.algorithms;
 import bp.MRF.Message;
 import bp.MRF.MRF;
 import bp.MRF.Utils;
-import bp.algorithms.queues.SequentialPriorityQueue;
+import bp.algorithms.queues.SequentialPQ;
 
-import java.util.Arrays;
 import java.util.Collection;
 
 /**
@@ -13,7 +12,7 @@ import java.util.Collection;
  */
 public class ResidualBP extends BPAlgorithm {
     double sensitivity;
-    SequentialPriorityQueue<Message> priorityQueue;
+    SequentialPQ<Message> priorityQueue;
 
     public ResidualBP(MRF mrf, double sensitivity) {
         super(mrf);
@@ -26,7 +25,7 @@ public class ResidualBP extends BPAlgorithm {
 
     public double[][] solve() {
         Collection<Message> messages = mrf.getMessages();
-        priorityQueue = new SequentialPriorityQueue<>(messages.size());
+        priorityQueue = new SequentialPQ<>(messages.size());
         for (Message message : messages) {
             priorityQueue.insert(message, getPriority(message));
         }
@@ -37,13 +36,16 @@ public class ResidualBP extends BPAlgorithm {
                 System.err.println(String.format("Iteration %d with maximal error %f", it,
                         priorityQueue.peek().getValue()));
             }
-            System.err.println(priorityQueue.peek().getKey().i + " " + priorityQueue.peek().getKey().j + " " +
-                    priorityQueue.peek().getValue());
+            Message m = priorityQueue.peek().getKey();
+
+//            System.err.println(m.i + " " + m.j + " " + priorityQueue.peek().getValue());
+//            System.err.println(Arrays.toString(m.logMu) + " " + Arrays.toString(mrf.getFutureMessage(m)) + " " +
+//                Utils.distance(m.logMu, mrf.getFutureMessage(m)));
 //            System.err.println(Arrays.deepToString(mrf.getNodeProbabilities()));
-            Message e = priorityQueue.peek().getKey();
-            mrf.updateMessage(e, mrf.getFutureMessage(e));
-            priorityQueue.changePriority(e, 0);
-            for (Message affected : mrf.getMessagesFrom(e.j)) {
+
+            mrf.updateMessage(m, mrf.getFutureMessage(m));
+            priorityQueue.changePriority(m, 0);
+            for (Message affected : mrf.getMessagesFrom(m.j)) {
                 priorityQueue.changePriority(affected, getPriority(affected));
             }
         }

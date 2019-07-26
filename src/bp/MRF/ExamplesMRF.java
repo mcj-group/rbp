@@ -8,15 +8,19 @@ import java.util.Random;
  */
 public class ExamplesMRF {
     public static MRF IsingMRF(int n, int C, int seed) {
-        Random rnd = new Random(seed);
-        MRF mrf = new MRF(n * n);
+        return IsingMRF(n, n, C, seed);
+    }
 
-        for (int i = 0; i < n * n; i++) {
+    public static MRF IsingMRF(int n, int m, int C, int seed) {
+        Random rnd = new Random(seed);
+        MRF mrf = new MRF(n * m);
+
+        for (int i = 0; i < n * m; i++) {
             double[] potential = new double[2];
             double beta = (rnd.nextDouble() - 0.5) * C;
             for (int j = 0; j < 2; j++) {
                 int v = 2 * j - 1;
-                potential[j] = Math.exp(beta * v);
+                potential[j] = rnd.nextDouble();//Math.exp(beta * v);
             }
             mrf.setNodePotential(i, potential);
         }
@@ -25,11 +29,11 @@ public class ExamplesMRF {
         int[] dy = new int[] {0, 1};
 
         for (int x = 0; x < n; x++) {
-            for (int y = 0; y < n; y++) {
-                int i = x * n + y;
+            for (int y = 0; y < m; y++) {
+                int i = x * m + y;
                 for (int k = 0; k < dx.length; k++) {
-                    if (x + dx[k] < n && y + dy[k] < n) {
-                        int j = (x + dx[k]) * n + (y + dy[k]);
+                    if (x + dx[k] < n && y + dy[k] < m) {
+                        int j = (x + dx[k]) * m + (y + dy[k]);
                         double alpha = (rnd.nextDouble() - 0.5) * C;
                         double[][] potential = new double[2][2];
                         for (int a = 0; a < 2; a++) {
@@ -136,6 +140,19 @@ public class ExamplesMRF {
             }
             mrf.addEdge(i, p, potential);
         }
+        return mrf;
+    }
+
+    public static MRF residualPaperExample() {
+        MRF mrf = new MRF(4);
+
+        for (int i = 0; i < 4; i++) {
+            mrf.setNodePotential(i, new double[] {1, 1});
+        }
+
+        mrf.addEdge(0, 1, new double[][] {{.25, .25}, {.5, .25}});
+        mrf.addEdge(1, 2, new double[][] {{1, 0.5}, {0.5, 0.5}});
+        mrf.addEdge(2, 3, new double[][] {{1,  .5}, {.5, 1}});
         return mrf;
     }
 }

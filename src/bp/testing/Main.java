@@ -14,7 +14,7 @@ public class Main {
         MRF mrf;
         switch (args[1]) {
             case "ising":
-                mrf = ExamplesMRF.IsingMRF(20, 11, 1);
+                mrf = ExamplesMRF.IsingMRF(400, 2, 1);
                 break;
             case "potts":
                 mrf = ExamplesMRF.PottsMRF(100, 5, 1);
@@ -24,6 +24,9 @@ public class Main {
                 break;
             case "tree":
                 mrf = ExamplesMRF.randomTree(10, 5, 1);
+                break;
+            case "example":
+                mrf = ExamplesMRF.residualPaperExample();
                 break;
             default:
                 throw new AssertionError(String.format("MRF %s is not supported", args[1]));
