@@ -1,6 +1,7 @@
 package bp.MRF;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 
@@ -137,6 +138,7 @@ public class MRF {
             logProductIn[j][valj] += -m.logMu[valj] + newLogMu[valj];
             m.logMu[valj] = newLogMu[valj];
         }
+        m.logMu = Arrays.copyOf(newLogMu, newLogMu.length);
     }
 
     public void updateMessage(Message e) {

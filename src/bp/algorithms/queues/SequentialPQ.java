@@ -24,6 +24,10 @@ public class SequentialPQ<K extends IdentifiedClass> {
         heap.changePriority(nodes[value.id], newPriority);
     }
 
+    public K extractMin() {
+        return heap.extractMin().value;
+    }
+
     public Pair<K, Double> peek() {
         PriorityNode<K> peek = heap.peek();
         return new Pair<>(peek.value, peek.priority);

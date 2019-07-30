@@ -4,6 +4,8 @@ import bp.MRF.ExamplesMRF;
 import bp.MRF.MRF;
 import bp.algorithms.*;
 
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.Arrays;
 
 /**
@@ -12,18 +14,20 @@ import java.util.Arrays;
 public class Main {
     public static void main(String[] args) {
         MRF mrf;
+        int size = Integer.parseInt(args[2]);
+        int threads = args.length < 3 ? 1 : Integer.parseInt(args[3]);
         switch (args[1]) {
             case "ising":
-                mrf = ExamplesMRF.IsingMRF(400, 2, 1);
+                mrf = ExamplesMRF.IsingMRF(size, 2, 1);
                 break;
             case "potts":
-                mrf = ExamplesMRF.PottsMRF(100, 5, 1);
+                mrf = ExamplesMRF.PottsMRF(size, 5, 1);
                 break;
             case "chain":
-                mrf = ExamplesMRF.chain(20, 5, 1);
+                mrf = ExamplesMRF.chain(size, 5, 1);
                 break;
             case "tree":
-                mrf = ExamplesMRF.randomTree(10, 5, 1);
+                mrf = ExamplesMRF.randomTree(size, 5, 1);
                 break;
             case "example":
                 mrf = ExamplesMRF.residualPaperExample();
@@ -42,6 +46,12 @@ public class Main {
             case "synchronous":
                 algorithm = new SynchronousBP(mrf, sensitivity);
                 break;
+            case "concurrent-unfair":
+                algorithm = new ConcurrentResidualBP(mrf, threads, false, sensitivity);
+                break;
+            case "concurrent-fair":
+                algorithm = new ConcurrentResidualBP(mrf, threads, true, sensitivity);
+                break;
             case "bruteforce":
                 algorithm = new BruteforceBP(mrf);
                 break;
@@ -52,7 +62,13 @@ public class Main {
         long start = System.currentTimeMillis();
         double[][] res = algorithm.solve();
         long end = System.currentTimeMillis();
-        System.err.println(Arrays.deepToString(res));
+        try {
+            PrintWriter out = new PrintWriter(String.format("results/%s-%d-%s-%d.txt", args[0], threads, args[1], size));
+            out.println(Arrays.deepToString(res));
+            out.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
         System.out.println(String.format("Execution time: %d", end - start));
     }
 }

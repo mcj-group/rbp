@@ -57,6 +57,9 @@ public class Heap<K> {
     }
 
     public PriorityNode<K> extractMin() {
+        if (size == 0) {
+            return null;
+        }
         if (size == 1) {
             size--;
             top = null;
@@ -64,6 +67,7 @@ public class Heap<K> {
         }
         PriorityNode<K> res = heap[1];
         heap[1] = heap[size];
+        heap[1].pos = 1;
         size--;
         siftDown(heap[1]);
         top = heap[1].copy();
