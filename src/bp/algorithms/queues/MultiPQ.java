@@ -1,8 +1,5 @@
 package bp.algorithms.queues;
 
-import javafx.util.Pair;
-
-import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -106,7 +103,7 @@ public class MultiPQ<K extends IdentifiedClass> {
         }
     }
 
-    public Pair<K, Double> peek() {
+    public PriorityNode<K> peek() {
         PriorityNode<K> peek = null;
         for (Heap queue : queues) {
             PriorityNode<K> next = queue.peek();
@@ -117,7 +114,7 @@ public class MultiPQ<K extends IdentifiedClass> {
                 peek = next;
             }
         }
-        return new Pair<>(peek.value, peek.priority);
+        return peek;
     }
 
     public boolean check() {

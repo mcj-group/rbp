@@ -44,7 +44,7 @@ public class ConcurrentResidualBP extends BPAlgorithm {
                 while (true) {
                     if (++it % 10 == 0) {
                         synchronized (priorityQueue) {
-                            if (priorityQueue.peek().getValue() < sensitivity) {
+                            if (priorityQueue.peek().priority < sensitivity) {
                                 return;
                             }
                         }

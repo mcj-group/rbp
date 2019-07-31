@@ -31,12 +31,12 @@ public class ResidualBP extends BPAlgorithm {
         }
 
         int it = 0;
-        while (priorityQueue.peek().getValue() > sensitivity) {
+        while (priorityQueue.peek().priority > sensitivity) {
             if (++it % 100000 == 0) {
                 System.err.println(String.format("Iteration %d with maximal error %f", it,
-                        priorityQueue.peek().getValue()));
+                        priorityQueue.peek().priority));
             }
-            Message m = priorityQueue.peek().getKey();
+            Message m = priorityQueue.peek().value;
 
 //            System.err.println(m.i + " " + m.j + " " + priorityQueue.peek().getValue());
 //            System.err.println(Arrays.toString(m.logMu) + " " + Arrays.toString(mrf.getFutureMessage(m)) + " " +

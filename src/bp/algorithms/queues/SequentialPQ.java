@@ -1,8 +1,5 @@
 package bp.algorithms.queues;
 
-import java.util.Arrays;
-import javafx.util.Pair;
-
 /**
  * Created by vaksenov on 24.07.2019.
  */
@@ -28,9 +25,8 @@ public class SequentialPQ<K extends IdentifiedClass> {
         return heap.extractMin().value;
     }
 
-    public Pair<K, Double> peek() {
-        PriorityNode<K> peek = heap.peek();
-        return new Pair<>(peek.value, peek.priority);
+    public PriorityNode<K> peek() {
+        return heap.peek();
     }
 
     public boolean check() {

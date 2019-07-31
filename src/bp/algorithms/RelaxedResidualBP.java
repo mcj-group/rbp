@@ -45,7 +45,7 @@ public class RelaxedResidualBP extends BPAlgorithm {
                     if (++it % 1000 == 0) {
 //                        System.err.println(it);
 //                        System.err.println(priorityQueue.peek().getValue());
-                        if (priorityQueue.peek().getValue() < sensitivity) {
+                        if (priorityQueue.peek().priority < sensitivity) {
                             return;
                         }
                     }

@@ -4,9 +4,9 @@ package bp.algorithms.queues;
  * Created by vaksenov on 26.07.2019.
  */
 public class PriorityNode<K> implements Comparable<PriorityNode<K>> {
-    int pos;
-    K value;
-    double priority;
+    public int pos;
+    public K value;
+    public double priority;
 
     public PriorityNode(K value, double priority) {
         this.value = value;
