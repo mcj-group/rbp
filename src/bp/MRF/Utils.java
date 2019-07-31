@@ -18,7 +18,7 @@ public class Utils {
     public static double distance(double[] log1, double[] log2) {
         double ans = 0;
         for (int i = 0; i < log1.length; i++) {
-            ans += Math.pow(Math.exp(log1[i]) - Math.exp(log2[i]), 2);
+            ans += Math.abs(Math.exp(log1[i]) - Math.exp(log2[i]));
         }
         return ans;
     }

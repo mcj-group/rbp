@@ -3,7 +3,7 @@ package bp.algorithms;
 import bp.MRF.Message;
 import bp.MRF.MRF;
 import bp.MRF.Utils;
-import bp.algorithms.queues.SequentialPQ;
+import bp.algorithms.queues.MultiPQ;
 
 import java.util.Collection;
 import java.util.concurrent.locks.ReentrantLock;
@@ -11,12 +11,12 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * Created by vaksenov on 24.07.2019.
  */
-public class ConcurrentResidualBP extends BPAlgorithm {
+public class RelaxedResidualBP extends BPAlgorithm {
     int threads;
     boolean fair;
     double sensitivity;
 
-    public ConcurrentResidualBP(MRF mrf, int threads, boolean fair, double sensitivity) {
+    public RelaxedResidualBP(MRF mrf, int threads, boolean fair, double sensitivity) {
         super(mrf);
         this.threads = threads;
         this.sensitivity = sensitivity;
@@ -33,7 +33,7 @@ public class ConcurrentResidualBP extends BPAlgorithm {
             locks[i] = new ReentrantLock();
         }
         Collection<Message> messages = mrf.getMessages();
-        final SequentialPQ<Message> priorityQueue = new SequentialPQ<>(messages.size());
+        final MultiPQ<Message> priorityQueue = new MultiPQ<>(messages.size(), 4 * threads);
         for (Message message : messages) {
             priorityQueue.insert(message, getPriority(message));
         }
@@ -42,17 +42,14 @@ public class ConcurrentResidualBP extends BPAlgorithm {
             workers[i] = new Thread(() -> {
                 int it = 0;
                 while (true) {
-                    if (++it % 10 == 0) {
-                        synchronized (priorityQueue) {
-                            if (priorityQueue.peek().getValue() < sensitivity) {
-                                return;
-                            }
+                    if (++it % 1000 == 0) {
+//                        System.err.println(it);
+//                        System.err.println(priorityQueue.peek().getValue());
+                        if (priorityQueue.peek().getValue() < sensitivity) {
+                            return;
                         }
                     }
-                    Message m;
-                    synchronized (priorityQueue) {
-                        m = priorityQueue.extractMin();
-                    }
+                    Message m = priorityQueue.extractMin();
 
                     int mi = Math.min(m.i, m.j);
                     int mj = Math.max(m.i, m.j);
@@ -63,24 +60,11 @@ public class ConcurrentResidualBP extends BPAlgorithm {
                     mrf.updateMessage(m);
 
                     Collection<Message> messagesFromJ = mrf.getMessagesFrom(m.j);
-                    double[] newPriorities = new double[messagesFromJ.size()];
-                    int j = 0;
                     for (Message affected : messagesFromJ) {
-                        newPriorities[j] = getPriority(affected);
-                        j++;
+                        priorityQueue.changePriority(affected, getPriority(affected));
                     }
 
-                    synchronized (priorityQueue) {
-                        j = 0;
-                        for (Message affected : messagesFromJ) {
-                            priorityQueue.changePriority(affected, newPriorities[j]);
-                            j++;
-                        }
-                        priorityQueue.insert(m, 0);
-//                        if (!priorityQueue.check()) {
-//                            throw new AssertionError();
-//                        }
-                    }
+                    priorityQueue.insert(m, 0);
                     if (fair) {
                         locks[mj].unlock();
                         locks[mi].unlock();

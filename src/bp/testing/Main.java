@@ -36,7 +36,7 @@ public class Main {
                 throw new AssertionError(String.format("MRF %s is not supported", args[1]));
         }
 
-        double sensitivity = 1e-10;
+        double sensitivity = 1e-5;
 
         BPAlgorithm algorithm;
         switch (args[0]) {
@@ -51,6 +51,12 @@ public class Main {
                 break;
             case "concurrent-fair":
                 algorithm = new ConcurrentResidualBP(mrf, threads, true, sensitivity);
+                break;
+            case "relaxed-unfair":
+                algorithm = new RelaxedResidualBP(mrf, threads, false, sensitivity);
+                break;
+            case "relaxed-fair":
+                algorithm = new RelaxedResidualBP(mrf, threads, true, sensitivity);
                 break;
             case "bruteforce":
                 algorithm = new BruteforceBP(mrf);

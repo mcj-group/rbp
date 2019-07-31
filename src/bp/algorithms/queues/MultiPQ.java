@@ -3,6 +3,7 @@ package bp.algorithms.queues;
 import javafx.util.Pair;
 
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -17,14 +18,17 @@ public class MultiPQ<K extends IdentifiedClass> {
             super(value, priority);
             this.queue = queue;
         }
+
+        public Node<K> copy() {
+            return new Node<>(value, priority, queue);
+        }
     }
 
     Heap<K>[] queues;
     Node<K>[] nodes;
     ReentrantLock[] locks;
-    Random[] rnds;
 
-    public MultiPQ(int maxSize, int relax, int threads) {
+    public MultiPQ(int maxSize, int relax) {
         nodes = new Node[maxSize];
         queues = new Heap[relax];
         for (int i = 0; i < queues.length; i++) {
@@ -34,49 +38,71 @@ public class MultiPQ<K extends IdentifiedClass> {
         for (int i = 0; i < locks.length; i++) {
             locks[i] = new ReentrantLock();
         }
-        rnds = new Random[threads];
-        for (int i = 0; i < rnds.length; i++) {
-            rnds[i] = new Random(i);
-        }
     }
 
-    public void insert(int thread, K value, double priority) {
-        int queue = rnds[thread].nextInt();
+    public void insert(K value, double priority) {
+        int queue = ThreadLocalRandom.current().nextInt(queues.length);
         Node<K> node = nodes[value.id];
         if (node == null) {
             node = nodes[value.id] = new Node<>(value, priority, queue);
         } else {
             node.priority = priority;
-            node.queue = queue;
         }
-        locks[node.queue].lock();
-        queues[node.queue].insert(node);
+        locks[queue].lock();
+        synchronized (node) {
+            node.queue = queue;
+            queues[node.queue].insert(node);
+        }
         locks[node.queue].unlock();
     }
 
-    public void changePriority(int thread, K value, double newPriority) {
+    public void changePriority(K value, double newPriority) {
         Node<K> node = nodes[value.id];
-        locks[node.queue].lock();
-        queues[node.queue].changePriority(node, newPriority);
-        locks[node.queue].unlock();
+        while (true) {
+            int queue = node.queue;
+            if (queue == -1) {
+                return;
+            }
+            locks[queue].lock();
+            if (node.queue != queue) {
+                locks[queue].unlock();
+                continue;
+            }
+            synchronized (node) {
+                queues[queue].changePriority(node, newPriority);
+            }
+            locks[queue].unlock();
+            return;
+        }
     }
 
-    public synchronized K extractMin(int thread) {
+    public synchronized K extractMin() {
         while (true) {
-            int i = rnds[thread].nextInt();
-            int j = rnds[thread].nextInt();
+            int i = ThreadLocalRandom.current().nextInt(queues.length);
+            int j = ThreadLocalRandom.current().nextInt(queues.length);
             Node<K> vi = (Node<K>) queues[i].peek();
             Node<K> vj = (Node<K>) queues[j].peek();
-            Node<K> min = vi.compareTo(vj) < 0 ? vi : vj;
-            if (!locks[min.queue].tryLock()) {
+            if (vi == null && vj == null) {
                 continue;
             }
-            PriorityNode<K> curr = queues[min.queue].extractMin();
-            locks[min.queue].unlock();
-            if (curr == null) {
+            Node<K> toExtract = vi == null ? vj : (vj == null ? vi :
+                    vi.compareTo(vj) < 0 ? vi : vj);
+            int queue = toExtract.queue;
+            if (!locks[queue].tryLock()) {
                 continue;
             }
-            return curr.value;
+            if (queues[queue].peek() != toExtract) {
+                locks[queue].unlock();
+                continue;
+            }
+
+            synchronized (toExtract) {
+                queues[queue].extractMin();
+                toExtract.queue = -1;
+            }
+            locks[queue].unlock();
+
+            return toExtract.value;
         }
     }
 
@@ -92,5 +118,15 @@ public class MultiPQ<K extends IdentifiedClass> {
             }
         }
         return new Pair<>(peek.value, peek.priority);
+    }
+
+    public boolean check() {
+        boolean good = true;
+        for (int i = 0; i < queues.length; i++) {
+            locks[i].lock();
+            good &= queues[i].check();
+            locks[i].unlock();
+        }
+        return good;
     }
 }
