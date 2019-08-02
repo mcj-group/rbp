@@ -87,6 +87,9 @@ public class SplashBP extends BPAlgorithm {
                 int it = 0;
                 int[] visited = new int[mrf.getNodes()];
                 int[] distance = new int[mrf.getNodes()];
+                ArrayList<Vertex> order = new ArrayList<>(mrf.getNodes());
+                Queue<Integer> queue = new ArrayDeque<>(mrf.getNodes());
+                HashSet<Integer> affected = new HashSet<>();
                 while (true) {
                     if (++it % 1000 == 0) {
                         if (pq.peek().priority < sensitivity) {
@@ -95,8 +98,8 @@ public class SplashBP extends BPAlgorithm {
                     }
 
                     Vertex v = pq.extractMin();
-                    ArrayList<Vertex> order = new ArrayList<>();
-                    Queue<Integer> queue = new ArrayDeque<>();
+                    order.clear();
+                    queue.clear();
                     visited[v.v] = it;
                     distance[v.v] = 0;
                     queue.add(v.v);
@@ -116,7 +119,7 @@ public class SplashBP extends BPAlgorithm {
                         }
                     }
 
-                    HashSet<Integer> affected = new HashSet<>();
+                    affected.clear();
                     for (int j = 0; j < order.size(); j++) {
                         Vertex u = order.get(order.size() - j - 1);
                         affected.add(u.v);
