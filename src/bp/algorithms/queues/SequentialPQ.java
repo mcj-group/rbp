@@ -3,7 +3,7 @@ package bp.algorithms.queues;
 /**
  * Created by vaksenov on 24.07.2019.
  */
-public class SequentialPQ<K extends IdentifiedClass> {
+public class SequentialPQ<K extends IdentifiedClass> implements PQ<K> {
     Heap<K> heap;
     PriorityNode<K>[] nodes;
 

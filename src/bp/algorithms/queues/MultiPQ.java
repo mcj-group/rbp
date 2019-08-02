@@ -6,7 +6,7 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * Created by vaksenov on 29.07.2019.
  */
-public class MultiPQ<K extends IdentifiedClass> {
+public class MultiPQ<K extends IdentifiedClass> implements PQ<K> {
 
     public class Node<K> extends PriorityNode<K> {
         int queue;
@@ -73,7 +73,7 @@ public class MultiPQ<K extends IdentifiedClass> {
         }
     }
 
-    public synchronized K extractMin() {
+    public K extractMin() {
         while (true) {
             int i = ThreadLocalRandom.current().nextInt(queues.length);
             int j = ThreadLocalRandom.current().nextInt(queues.length);
@@ -85,6 +85,9 @@ public class MultiPQ<K extends IdentifiedClass> {
             Node<K> toExtract = vi == null ? vj : (vj == null ? vi :
                     vi.compareTo(vj) < 0 ? vi : vj);
             int queue = toExtract.queue;
+            if (queue == -1) {
+                continue;
+            }
             if (!locks[queue].tryLock()) {
                 continue;
             }
@@ -105,7 +108,7 @@ public class MultiPQ<K extends IdentifiedClass> {
 
     public PriorityNode<K> peek() {
         PriorityNode<K> peek = null;
-        for (Heap queue : queues) {
+        for (Heap<K> queue : queues) {
             PriorityNode<K> next = queue.peek();
             if (next == null) {
                 continue;

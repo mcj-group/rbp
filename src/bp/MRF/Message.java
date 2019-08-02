@@ -11,6 +11,7 @@ public class Message extends IdentifiedClass {
     public int i, j;
     Edge e;
     public double[] logMu;
+    public Message reverse;
 
     public Message(int id, int i, int j, Edge e) {
         this.id = id;

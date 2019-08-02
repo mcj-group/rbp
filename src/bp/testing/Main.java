@@ -58,6 +58,18 @@ public class Main {
             case "relaxed-fair":
                 algorithm = new RelaxedResidualBP(mrf, threads, true, sensitivity);
                 break;
+            case "splash-unfair":
+                algorithm = new SplashBP(mrf, Integer.parseInt(args[4]), threads, false, false, sensitivity);
+                break;
+            case "splash-fair":
+                algorithm = new SplashBP(mrf, Integer.parseInt(args[4]), threads,true, false, sensitivity);
+                break;
+            case "relaxed-splash-unfair":
+                algorithm = new SplashBP(mrf, Integer.parseInt(args[4]), threads, false, true, sensitivity);
+                break;
+            case "relaxed-splash-fair":
+                algorithm = new SplashBP(mrf, Integer.parseInt(args[4]), threads, true, true, sensitivity);
+                break;
             case "bruteforce":
                 algorithm = new BruteforceBP(mrf);
                 break;

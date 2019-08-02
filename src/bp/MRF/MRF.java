@@ -79,21 +79,24 @@ public class MRF {
         Edge e = new Edge(i, j, phi);
         edges.add(e);
 
-        Message m = new Message(messageId++, i, j, e);
-        messagesFrom[i].add(m);
-        messagesTo[j].add(m);
-        messagesByIds.put(new Pair(i, j), m);
+        Message m1 = new Message(messageId++, i, j, e);
+        messagesFrom[i].add(m1);
+        messagesTo[j].add(m1);
+        messagesByIds.put(new Pair(i, j), m1);
         for (int valj = 0; valj < nodePotentials[j].length; valj++) {
-            logProductIn[j][valj] += m.logMu[valj];
+            logProductIn[j][valj] += m1.logMu[valj];
         }
 
-        m = new Message(messageId++, j, i, e);
-        messagesFrom[j].add(m);
-        messagesTo[i].add(m);
-        messagesByIds.put(new Pair(j, i), m);
+        Message m2 = new Message(messageId++, j, i, e);
+        messagesFrom[j].add(m2);
+        messagesTo[i].add(m2);
+        messagesByIds.put(new Pair(j, i), m2);
         for (int vali = 0; vali < nodePotentials[i].length; vali++) {
-            logProductIn[i][vali] += m.logMu[vali];
+            logProductIn[i][vali] += m2.logMu[vali];
         }
+
+        m1.reverse = m2;
+        m2.reverse = m1;
     }
 
     public Collection<Message> getMessages() {
@@ -104,10 +107,14 @@ public class MRF {
         return messagesFrom[v];
     }
 
+    public Collection<Message> getMessagesTo(int v) {
+        return messagesTo[v];
+    }
+
     public double[] getFutureMessage(Message m) {
         int i = m.i;
         int j = m.j;
-        Message reverseMessage = messagesByIds.get(new Pair(j, i));
+        Message reverseMessage = m.reverse;
 
         double[] result = new double[nodePotentials[j].length];
 
