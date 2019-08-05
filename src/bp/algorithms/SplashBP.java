@@ -141,7 +141,7 @@ public class SplashBP extends BPAlgorithm {
                         if (fair) {
                             locks[u].lock();
                         }
-                        pq.changePriority(vertices[u], getPriority(vertices[u]));
+                        pq.changePriority(vertices[u], getPriority(vertices[u]), 1e-7);
                         if (fair) {
                             locks[u].unlock();
                         }

@@ -17,6 +17,12 @@ public class ConcurrentPQ<K extends IdentifiedClass> extends SequentialPQ<K> {
         super.changePriority(value, newPriority);
     }
 
+    public void changePriority(K value, double newPriority, double sensitivity) {
+        if (Math.abs(nodes[value.id].priority - newPriority) < sensitivity)
+            return;
+        changePriority(value, newPriority);
+    }
+
     public synchronized K extractMin() {
         return super.extractMin();
     }
