@@ -21,6 +21,12 @@ public class SequentialPQ<K extends IdentifiedClass> implements PQ<K> {
         heap.changePriority(nodes[value.id], newPriority);
     }
 
+    public void changePriority(K value, double newPriority, double sensitivity) {
+        if (Math.abs(nodes[value.id].priority - newPriority) < sensitivity)
+            return;
+        changePriority(value, newPriority);
+    }
+
     public K extractMin() {
         return heap.extractMin().value;
     }

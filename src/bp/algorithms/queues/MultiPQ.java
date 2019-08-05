@@ -73,6 +73,12 @@ public class MultiPQ<K extends IdentifiedClass> implements PQ<K> {
         }
     }
 
+    public void changePriority (K value, double newPriority, double sensitivity) {
+        if (Math.abs(nodes[value.id].priority - newPriority) < sensitivity)
+            return;
+        changePriority(value, newPriority);
+    }
+
     public K extractMin() {
         while (true) {
             int i = ThreadLocalRandom.current().nextInt(queues.length);
