@@ -13,6 +13,9 @@ public class Message extends IdentifiedClass {
     public double[] logMu;
     public Message reverse;
 
+    // For relaxed RMF
+    public int fromId, toId;
+
     public Message(int id, int i, int j, Edge e) {
         this.id = id;
         this.i = i;

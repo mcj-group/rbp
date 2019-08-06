@@ -61,7 +61,9 @@ public class RelaxedResidualBP extends BPAlgorithm {
 
                     Collection<Message> messagesFromJ = mrf.getMessagesFrom(m.j);
                     for (Message affected : messagesFromJ) {
-                        priorityQueue.changePriority(affected, getPriority(affected));
+                        if (affected.j != m.i) {
+                            priorityQueue.changePriority(affected, getPriority(affected));
+                        }
                     }
 
                     priorityQueue.insert(m, 0);

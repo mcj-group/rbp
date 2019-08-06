@@ -75,25 +75,25 @@ public class MRF {
         logProductIn[v] = new double[potentials.length];
     }
 
+    protected Message createMessage(int i, int j, Edge e) {
+        Message m = new Message(messageId++, i, j, e);
+        m.fromId = messagesFrom[i].size();
+        messagesFrom[i].add(m);
+        m.toId = messagesTo[j].size();
+        messagesTo[j].add(m);
+        messagesByIds.put(new Pair(i, j), m);
+        for (int valj = 0; valj < nodePotentials[j].length; valj++) {
+            logProductIn[j][valj] += m.logMu[valj];
+        }
+        return m;
+    }
+
     public void addEdge(int i, int j, double[][] phi) {
         Edge e = new Edge(i, j, phi);
         edges.add(e);
 
-        Message m1 = new Message(messageId++, i, j, e);
-        messagesFrom[i].add(m1);
-        messagesTo[j].add(m1);
-        messagesByIds.put(new Pair(i, j), m1);
-        for (int valj = 0; valj < nodePotentials[j].length; valj++) {
-            logProductIn[j][valj] += m1.logMu[valj];
-        }
-
-        Message m2 = new Message(messageId++, j, i, e);
-        messagesFrom[j].add(m2);
-        messagesTo[i].add(m2);
-        messagesByIds.put(new Pair(j, i), m2);
-        for (int vali = 0; vali < nodePotentials[i].length; vali++) {
-            logProductIn[i][vali] += m2.logMu[vali];
-        }
+        Message m1 = createMessage(i, j, e);
+        Message m2 = createMessage(j, i, e);
 
         m1.reverse = m2;
         m2.reverse = m1;
