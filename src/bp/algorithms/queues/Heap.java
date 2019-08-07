@@ -8,10 +8,11 @@ import java.util.Arrays;
 public class Heap<K> {
     int size;
     PriorityNode<K>[] heap;
-    PriorityNode<K> peek = new PriorityNode<>(null, 0);
+    PriorityNode<K> peek;
 
     public Heap(int maxSize) {
         heap = new PriorityNode[maxSize + 1];
+        peek = new PriorityNode<>(null, -1);
     }
 
     public void siftUp(PriorityNode<K> node) {
@@ -53,7 +54,11 @@ public class Heap<K> {
         }
         heap[node.pos] = node;
         siftUp(node);
-        peek.copyFrom(heap[1]);
+        if (peek.priority == -1) {
+            peek = heap[1].copy();
+        } else {
+            peek.copyFrom(heap[1]);
+        }
     }
 
     public PriorityNode<K> extractMin() {
@@ -62,7 +67,7 @@ public class Heap<K> {
         }
         if (size == 1) {
             size--;
-            peek.priority = 0;
+            peek.priority = -1;
             heap[1] = null;
             return heap[1];
         }
@@ -71,7 +76,7 @@ public class Heap<K> {
         heap[1].pos = 1;
         size--;
         siftDown(heap[1]);
-        peek.copyFrom(heap[1].copy());
+        peek.copyFrom(heap[1]);
         return res;
     }
 
@@ -79,10 +84,15 @@ public class Heap<K> {
         node.priority = priority;
         siftUp(node);
         siftDown(node);
+        peek.copyFrom(heap[1]);
     }
 
     public PriorityNode<K> peek() {
-        return peek;
+        return peek.priority == -1 ? null : peek;
+    }
+
+    public PriorityNode<K> realPeek() {
+        return heap[1];
     }
 
     public boolean check() {

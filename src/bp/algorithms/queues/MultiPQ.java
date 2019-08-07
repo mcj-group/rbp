@@ -9,7 +9,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class MultiPQ<K extends IdentifiedClass> implements PQ<K> {
 
     public class Node<K> extends PriorityNode<K> {
-        int queue;
+        public int queue;
 
         public Node(K value, double priority, int queue) {
             super(value, priority);
@@ -18,6 +18,11 @@ public class MultiPQ<K extends IdentifiedClass> implements PQ<K> {
 
         public Node<K> copy() {
             return new Node<>(value, priority, queue);
+        }
+
+        public void copyFrom(PriorityNode<K> node) {
+            super.copyFrom(node);
+            this.queue = ((Node<K>) node).queue;
         }
     }
 
@@ -83,8 +88,8 @@ public class MultiPQ<K extends IdentifiedClass> implements PQ<K> {
         while (true) {
             int i = ThreadLocalRandom.current().nextInt(queues.length);
             int j = ThreadLocalRandom.current().nextInt(queues.length);
-            Node<K> vi = (Node<K>) queues[i].peek();
-            Node<K> vj = (Node<K>) queues[j].peek();
+            Node<K> vi = (Node<K>) queues[i].realPeek();
+            Node<K> vj = (Node<K>) queues[j].realPeek();
             if (vi == null && vj == null) {
                 continue;
             }
@@ -97,7 +102,7 @@ public class MultiPQ<K extends IdentifiedClass> implements PQ<K> {
             if (!locks[queue].tryLock()) {
                 continue;
             }
-            if (queues[queue].peek() != toExtract) {
+            if (queues[queue].peek().value != toExtract.value) {
                 locks[queue].unlock();
                 continue;
             }
@@ -116,7 +121,7 @@ public class MultiPQ<K extends IdentifiedClass> implements PQ<K> {
         PriorityNode<K> peek = null;
         for (int i = 0; i < queues.length; i++) {
             Heap<K> queue = queues[i];
-            PriorityNode<K> next = queue.peek().copy();
+            PriorityNode<K> next = queue.peek();
             if (next == null) {
                 continue;
             }
@@ -132,6 +137,10 @@ public class MultiPQ<K extends IdentifiedClass> implements PQ<K> {
         for (int i = 0; i < queues.length; i++) {
             locks[i].lock();
             good &= queues[i].check();
+            PriorityNode<K> peek = queues[i].peek();
+            if (peek != null) {
+                good &= ((Node<K>)queues[i].peek).queue == i;
+            }
             locks[i].unlock();
         }
         return good;
