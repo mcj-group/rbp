@@ -76,6 +76,9 @@ public class Main {
             case "relaxed-smart-splash-fair":
                 algorithm = new SmartSplashBP(mrf, Integer.parseInt(args[4]), threads, true, true, sensitivity);
                 break;
+            case "relaxed-priority-fair":
+                algorithm = new RelaxedPriorityBP(mrf, threads, true, true, sensitivity);
+                break;
             case "bruteforce":
                 algorithm = new BruteforceBP(mrf);
                 break;
@@ -86,13 +89,13 @@ public class Main {
         long start = System.currentTimeMillis();
         double[][] res = algorithm.solve();
         long end = System.currentTimeMillis();
-//        try {
-//            PrintWriter out = new PrintWriter(String.format("results/%s-%d-%s-%d.txt", args[0], threads, args[1], size));
-//            out.println(Arrays.deepToString(res));
-//            out.close();
-//        } catch (FileNotFoundException e) {
-//            e.printStackTrace();
-//        }
+        try {
+            PrintWriter out = new PrintWriter(String.format("results/%s-%d-%s-%d.txt", args[0], threads, args[1], size));
+            out.println(Arrays.deepToString(res));
+            out.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
         System.out.println(String.format("Execution time: %d", end - start));
     }
 }
