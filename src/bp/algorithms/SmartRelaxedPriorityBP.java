@@ -93,8 +93,8 @@ public class SmartRelaxedPriorityBP extends BPAlgorithm {
                         priorityQueue.changePriority(affected, currentPriority[affected.id]);
                     }
 
-                    currentPriority[m.id] = 0;
-                    priorityQueue.insert(m, 0);
+                    currentPriority[m.id] = r;
+                    priorityQueue.insert(m, r);
                     if (fair) {
                         locks[mj].unlock();
                         locks[mi].unlock();
