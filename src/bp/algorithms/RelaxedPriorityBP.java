@@ -94,7 +94,8 @@ public class RelaxedPriorityBP extends BPAlgorithm {
                     int revId = m.reverse.fromId;
                     for (int d = 0; d < T[m.j][0].length; d++) {
                         if (revId == d) {
-                            continue;}
+                            continue;
+                        }
                         T[m.j][m.toId][d] += r;
                     }
 
@@ -110,7 +111,7 @@ public class RelaxedPriorityBP extends BPAlgorithm {
                         priorityQueue.changePriority(affected, v);
                     }
 
-                    priorityQueue.insert(m, 0);
+                    priorityQueue.insert(m, r);
                     if (fair) {
                         locks[mj].unlock();
                         locks[mi].unlock();
