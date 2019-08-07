@@ -79,6 +79,9 @@ public class Main {
             case "relaxed-priority-fair":
                 algorithm = new RelaxedPriorityBP(mrf, threads, true, true, sensitivity);
                 break;
+            case "smart-relaxed-priority-fair":
+                algorithm = new SmartRelaxedPriorityBP(mrf, threads, true, true, sensitivity);
+                break;
             case "bruteforce":
                 algorithm = new BruteforceBP(mrf);
                 break;

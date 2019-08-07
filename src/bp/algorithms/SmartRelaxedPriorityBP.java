@@ -11,13 +11,13 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * Created by vaksenov on 24.07.2019.
  */
-public class RelaxedPriorityBP extends BPAlgorithm {
+public class SmartRelaxedPriorityBP extends BPAlgorithm {
     int threads;
     boolean fair;
     boolean relaxed;
     double sensitivity;
 
-    public RelaxedPriorityBP(MRF mrf, int threads, boolean fair, boolean relaxed, double sensitivity) {
+    public SmartRelaxedPriorityBP(MRF mrf, int threads, boolean fair, boolean relaxed, double sensitivity) {
         super(mrf);
         this.threads = threads;
         this.sensitivity = sensitivity;
@@ -52,14 +52,11 @@ public class RelaxedPriorityBP extends BPAlgorithm {
         final PQ<Message> priorityQueue = relaxed ?
                 new MultiPQ<>(messages.size(), 4 * threads) :
                 new ConcurrentPQ<>(messages.size());
+        double[] currentPriority = new double[messages.size()];
         for (Message message : messages) {
-            priorityQueue.insert(message, getInitialPriority(message));
+            currentPriority[message.id] = getInitialPriority(message);
+            priorityQueue.insert(message, currentPriority[message.id]);
 //            priorityQueue.insert(message, getResidual(message, mrf.getFutureMessage(message)));
-        }
-
-        double[][][] T = new double[mrf.getNodes()][][];
-        for (int i = 0; i < T.length; i++) {
-            T[i] = new double[mrf.getMessagesTo(i).size()][mrf.getMessagesFrom(i).size()];
         }
 
         Thread[] workers = new Thread[threads];
@@ -87,29 +84,16 @@ public class RelaxedPriorityBP extends BPAlgorithm {
 
                     mrf.updateMessage(m, futureM);
 
-                    for (int a = 0; a < T[m.i].length; a++) {
-                        T[m.i][a][m.fromId] = 0;
-                    }
-
-                    int revId = m.reverse.fromId;
-                    for (int d = 0; d < T[m.j][0].length; d++) {
-                        if (revId == d) {
-                            continue;}
-                        T[m.j][m.toId][d] += r;
-                    }
-
                     Collection<Message> messagesFromJ = mrf.getMessagesFrom(m.j);
                     for (Message affected : messagesFromJ) {
                         if (affected.j == m.i) {
                             continue;
                         }
-                        double v = 0;
-                        for (int a = 0; a < T[affected.i].length; a++) {
-                            v += T[affected.i][a][affected.fromId];
-                        }
-                        priorityQueue.changePriority(affected, v);
+                        currentPriority[affected.id] += r;
+                        priorityQueue.changePriority(affected, currentPriority[affected.id]);
                     }
 
+                    currentPriority[m.id] = 0;
                     priorityQueue.insert(m, 0);
                     if (fair) {
                         locks[mj].unlock();
