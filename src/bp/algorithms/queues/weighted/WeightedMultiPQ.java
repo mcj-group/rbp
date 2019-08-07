@@ -80,7 +80,8 @@ public class WeightedMultiPQ<K extends IdentifiedClass> {
                 continue;
             }
 
-            node.weight = newPriority / node.totalUpdates;
+            node.priority = newPriority / node.totalUpdates;
+            node.weight = newPriority;
 
             synchronized (node) {
                 queues[queue].changePriority(node, newPriority);
