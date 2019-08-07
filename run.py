@@ -8,22 +8,33 @@ import seaborn as sns
 import subprocess
 import sys
 
-proc = [143] #[1, 2, 6, 10, 20, 30, 40, 50, 70]
+proc = [1, 2, 6, 10, 20, 30, 40, 50, 70]
 
 # all
-algorithms = ["concurrent-unfair", "concurrent-fair", "relaxed-unfair", "relaxed-fair", "splash-unfair", "splash-fair", "relaxed-splash-unfair", "relaxed-splash-fair", "relaxed-smart-splash-unfair", "relaxed-smart-splash-fair"]
+#algorithms = ["concurrent-unfair", "concurrent-fair",
+#               "relaxed-unfair", "relaxed-fair",
+#               "splash-unfair", "splash-fair",
+#               "relaxed-splash-unfair", "relaxed-splash-fair",
+#               "relaxed-smart-splash-unfair", "relaxed-smart-splash-fair",
+#               "relaxed-priority-fair", "smart-relaxed-priority-fair"]
 # small
-#algorithms = ["relaxed-unfair", "relaxed-fair", "splash-unfair", "splash-fair", "relaxed-splash-unfair", "relaxed-splash-fair", "relaxed-smart-splash-unfair", "relaxed-smart-splash-fair"]
+algorithms = ["relaxed-unfair", "relaxed-fair",
+               "splash-unfair", "splash-fair",
+               "relaxed-splash-unfair", "relaxed-splash-fair",
+               "relaxed-smart-splash-unfair", "relaxed-smart-splash-fair",
+               "relaxed-priority-fair", "smart-relaxed-priority-fair"]
 # splash
 #algorithms = ["splash-unfair", "splash-fair", "relaxed-splash-unfair", "relaxed-splash-fair", "relaxed-smart-splash-unfair", "relaxed-smart-splash-fair"]
 # fair
-#algorithms = ["concurrent-fair", "relaxed-fair", "splash-fair", "relaxed-splash-fair", "relaxed-smart-splash-fair"]
+#algorithms = ["concurrent-fair", "relaxed-fair", "splash-fair", "relaxed-splash-fair", "relaxed-smart-splash-fair", "relaxed-priority-fair", "smart-relaxed-priority-fair"]
+
+#algorithms = ["relaxed-priority-fair", "smart-relaxed-priority-fair"]
 
 inputs = [("ising", 300), ("potts", 300)]
 
 #splash_h = [5, 10]
 #splash_h = [5]
-splash_h = [2, 5, 10]
+splash_h = [2, 5]
 
 def compile():
     os.system("ant compile")
@@ -61,13 +72,14 @@ def algorithmName(algorithm, h):
    else:
        return algorithm
 
-def plot():
+def plot(fairness):
    if not os.path.isdir("out/plots"):
        os.makedirs("out/plots")
 
 #   sns.set_palette(sns.color_palette("husl", 12))
 #   sns.set_palette(sns.color_palette("hls", 12))
-   sns.set_palette(sns.color_palette("Paired"))
+   if fairness == "all":
+       sns.set_palette(sns.color_palette("Paired"))
 
    for data in inputs:
        print(data)
@@ -80,6 +92,8 @@ def plot():
 
        for hid in range(len(splash_h)):
            for algorithm in algorithms:
+               if fairness == "fair" and "unfair" in algorithm:
+                   continue
                if "splash" in algorithm:
                    h = splash_h[hid]
                else:
@@ -111,4 +125,7 @@ if sys.argv[1] == "run":
     compile()
     run(int(sys.argv[2]))
 if sys.argv[1] == "plot":
-    plot()
+    if len(sys.argv) == 2:
+        plot("all")
+    else:
+        plot(sys.argv[2])

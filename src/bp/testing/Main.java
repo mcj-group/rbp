@@ -95,13 +95,13 @@ public class Main {
         long start = System.currentTimeMillis();
         double[][] res = algorithm.solve();
         long end = System.currentTimeMillis();
-        try {
+/*        try {
             PrintWriter out = new PrintWriter(String.format("results/%s-%d-%s-%d.txt", args[0], threads, args[1], size));
             out.println(Arrays.deepToString(res));
             out.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-        }
+        }*/
         System.out.println(String.format("Execution time: %d", end - start));
     }
 }
