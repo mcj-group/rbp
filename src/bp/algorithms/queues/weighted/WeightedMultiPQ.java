@@ -1,23 +1,31 @@
-package bp.algorithms.queues;
+package bp.algorithms.queues.weighted;
 
+import bp.algorithms.queues.Heap;
+import bp.algorithms.queues.IdentifiedClass;
+import bp.algorithms.queues.PQ;
+import bp.algorithms.queues.PriorityNode;
+
+import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Created by vaksenov on 29.07.2019.
  */
-public class MultiPQ<K extends IdentifiedClass> implements PQ<K> {
+public class WeightedMultiPQ<K extends IdentifiedClass> {
+    Random rnd = new Random(239);
 
-    public class Node<K> extends PriorityNode<K> {
+
+    public class Node<K> extends WeightedPriorityNode<K> {
         public int queue;
 
-        public Node(K value, double priority, int queue) {
-            super(value, priority);
+        public Node(K value, double priority, double weight, int queue) {
+            super(value, priority, weight);
             this.queue = queue;
         }
 
         public Node<K> copy() {
-            return new Node<>(value, priority, queue);
+            return new Node<>(value, priority, weight, queue);
         }
 
         public void copyFrom(PriorityNode<K> node) {
@@ -26,15 +34,15 @@ public class MultiPQ<K extends IdentifiedClass> implements PQ<K> {
         }
     }
 
-    Heap<K>[] queues;
+    WeightedHeap<K>[] queues;
     Node<K>[] nodes;
     ReentrantLock[] locks;
 
-    public MultiPQ(int maxSize, int relax) {
+    public WeightedMultiPQ(int maxSize, int relax) {
         nodes = new Node[maxSize];
-        queues = new Heap[relax];
+        queues = new WeightedHeap[relax];
         for (int i = 0; i < queues.length; i++) {
-            queues[i] = new Heap<>(maxSize);
+            queues[i] = new WeightedHeap<>(maxSize);
         }
         locks = new ReentrantLock[relax];
         for (int i = 0; i < locks.length; i++) {
@@ -42,13 +50,14 @@ public class MultiPQ<K extends IdentifiedClass> implements PQ<K> {
         }
     }
 
-    public void insert(K value, double priority) {
+    public void insert(K value, double priority, double weight) {
         int queue = ThreadLocalRandom.current().nextInt(queues.length);
         Node<K> node = nodes[value.id];
         if (node == null) {
-            node = nodes[value.id] = new Node<>(value, priority, queue);
+            node = nodes[value.id] = new Node<>(value, priority, weight, queue);
         } else {
             node.priority = priority;
+            node.weight = weight;
         }
         locks[queue].lock();
         synchronized (node) {
@@ -70,6 +79,9 @@ public class MultiPQ<K extends IdentifiedClass> implements PQ<K> {
                 locks[queue].unlock();
                 continue;
             }
+
+            node.weight = newPriority / node.totalUpdates;
+
             synchronized (node) {
                 queues[queue].changePriority(node, newPriority);
             }
@@ -78,13 +90,13 @@ public class MultiPQ<K extends IdentifiedClass> implements PQ<K> {
         }
     }
 
-    public void changePriority (K value, double newPriority, double sensitivity) {
+    public void changePriority(K value, double newPriority, double sensitivity) {
         if (Math.abs(nodes[value.id].priority - newPriority) < sensitivity)
             return;
         changePriority(value, newPriority);
     }
 
-    public K extractMin() {
+    public WeightedPriorityNode<K> extractMin() {
         while (true) {
             int i = ThreadLocalRandom.current().nextInt(queues.length);
             int j = ThreadLocalRandom.current().nextInt(queues.length);
@@ -113,15 +125,15 @@ public class MultiPQ<K extends IdentifiedClass> implements PQ<K> {
             }
             locks[queue].unlock();
 
-            return toExtract.value;
+            return toExtract;
         }
     }
 
-    public PriorityNode<K> peek() {
-        PriorityNode<K> peek = null;
+    public WeightedPriorityNode<K> peek() {
+        WeightedPriorityNode<K> peek = null;
         for (int i = 0; i < queues.length; i++) {
-            Heap<K> queue = queues[i];
-            PriorityNode<K> next = queue.peek();
+            WeightedHeap<K> queue = queues[i];
+            WeightedPriorityNode<K> next = queue.peek();
             if (next == null) {
                 continue;
             }
@@ -139,7 +151,7 @@ public class MultiPQ<K extends IdentifiedClass> implements PQ<K> {
             good &= queues[i].check();
             PriorityNode<K> peek = queues[i].peek();
             if (peek != null) {
-                good &= ((Node<K>)queues[i].peek).queue == i;
+                good &= ((Node<K>) queues[i].peek).queue == i;
             }
             locks[i].unlock();
         }
