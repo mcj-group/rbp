@@ -82,6 +82,9 @@ public class Main {
             case "smart-relaxed-priority-fair":
                 algorithm = new SmartRelaxedPriorityBP(mrf, threads, true, true, sensitivity);
                 break;
+            case "weight-decay-fair":
+                algorithm = new WeightDecayBP(mrf, threads, true, sensitivity);
+                break;
             case "bruteforce":
                 algorithm = new BruteforceBP(mrf);
                 break;
