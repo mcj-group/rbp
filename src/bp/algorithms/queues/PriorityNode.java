@@ -18,7 +18,12 @@ public class PriorityNode<K> implements Comparable<PriorityNode<K>> {
     }
 
     public PriorityNode<K> copy() {
-        return new PriorityNode<K>(value, priority);
+        return new PriorityNode<>(value, priority);
+    }
+
+    public void copyFrom(PriorityNode<K> node) {
+        this.value = node.value;
+        this.priority = node.priority;
     }
 
     public String toString() {
