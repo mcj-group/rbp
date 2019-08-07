@@ -77,7 +77,7 @@ public class Main {
                 algorithm = new SmartSplashBP(mrf, Integer.parseInt(args[4]), threads, true, true, sensitivity);
                 break;
             case "relaxed-priority-fair":
-                algorithm = new RelaxedPriorityBP(mrf, threads, true, false, sensitivity);
+                algorithm = new RelaxedPriorityBP(mrf, threads, true, true, sensitivity);
                 break;
             case "bruteforce":
                 algorithm = new BruteforceBP(mrf);
