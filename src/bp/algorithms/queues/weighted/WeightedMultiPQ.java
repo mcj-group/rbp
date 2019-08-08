@@ -134,7 +134,7 @@ public class WeightedMultiPQ<K extends IdentifiedClass> {
         WeightedPriorityNode<K> peek = null;
         for (int i = 0; i < queues.length; i++) {
             WeightedHeap<K> queue = queues[i];
-            WeightedPriorityNode<K> next = queue.peek();
+            WeightedPriorityNode<K> next = queue.peek().copy();
             if (next == null) {
                 continue;
             }
