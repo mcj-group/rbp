@@ -98,6 +98,7 @@ public class SplashBP extends BPAlgorithm {
                     }
 
                     Vertex v = pq.extractMin();
+
                     order.clear();
                     queue.clear();
                     visited[v.v] = it;
@@ -138,6 +139,9 @@ public class SplashBP extends BPAlgorithm {
                     }
 
                     for (int u : affected) {
+                        if (u == v.v) {
+                            continue;
+                        }
                         if (fair) {
                             locks[u].lock();
                         }
@@ -153,6 +157,10 @@ public class SplashBP extends BPAlgorithm {
                     if (fair) {
                         locks[v.v].unlock();
                     }
+
+//                    if (!((ConcurrentPQ)pq).check()) {
+//                        throw new AssertionError();
+//                    }
                 }
             });
             workers[i].start();
