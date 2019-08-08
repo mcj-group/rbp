@@ -21,7 +21,9 @@ public class WeightedPriorityNode<K> extends PriorityNode<K> implements Comparab
     }
 
     public WeightedPriorityNode<K> copy() {
-        return new WeightedPriorityNode<K>(value, priority, weight);
+        WeightedPriorityNode<K> node = new WeightedPriorityNode<K>(value, priority, weight);
+        node.maxWeight = maxWeight;
+        return node;
     }
 
     public void copyFrom(WeightedPriorityNode<K> node) {

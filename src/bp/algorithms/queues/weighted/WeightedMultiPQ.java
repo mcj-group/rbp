@@ -25,10 +25,12 @@ public class WeightedMultiPQ<K extends IdentifiedClass> {
         }
 
         public Node<K> copy() {
-            return new Node<>(value, priority, weight, queue);
+            Node<K> node = new Node<>(value, priority, weight, queue);
+            node.maxWeight = this.maxWeight;
+            return node;
         }
 
-        public void copyFrom(PriorityNode<K> node) {
+        public void copyFrom(WeightedPriorityNode<K> node) {
             super.copyFrom(node);
             this.queue = ((Node<K>) node).queue;
         }

@@ -112,7 +112,8 @@ public class WeightedHeap<K> {
     }
 
     public void changePriority(WeightedPriorityNode<K> node, double priority) {
-        node.priority = priority;
+        node.priority = priority / node.totalUpdates;
+        node.weight = priority;
         siftUp(node);
         siftDown(node);
         peek.copyFrom(heap[1]);
