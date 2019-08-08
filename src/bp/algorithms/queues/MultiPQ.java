@@ -121,10 +121,11 @@ public class MultiPQ<K extends IdentifiedClass> implements PQ<K> {
         PriorityNode<K> peek = null;
         for (int i = 0; i < queues.length; i++) {
             Heap<K> queue = queues[i];
-            PriorityNode<K> next = queue.peek().copy();
+            PriorityNode<K> next = queue.peek();
             if (next == null) {
                 continue;
             }
+            next = next.copy();
             if (peek == null || peek.compareTo(next) > 0) {
                 peek = next;
             }

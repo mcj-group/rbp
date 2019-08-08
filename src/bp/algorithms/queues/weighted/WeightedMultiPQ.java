@@ -80,9 +80,6 @@ public class WeightedMultiPQ<K extends IdentifiedClass> {
                 continue;
             }
 
-            node.priority = newPriority / node.totalUpdates;
-            node.weight = newPriority;
-
             synchronized (node) {
                 queues[queue].changePriority(node, newPriority);
             }
@@ -134,10 +131,11 @@ public class WeightedMultiPQ<K extends IdentifiedClass> {
         WeightedPriorityNode<K> peek = null;
         for (int i = 0; i < queues.length; i++) {
             WeightedHeap<K> queue = queues[i];
-            WeightedPriorityNode<K> next = queue.peek().copy();
+            WeightedPriorityNode<K> next = queue.peek();
             if (next == null) {
                 continue;
             }
+            next = next.copy();
             if (peek == null || peek.compareTo(next) > 0) {
                 peek = next;
             }
