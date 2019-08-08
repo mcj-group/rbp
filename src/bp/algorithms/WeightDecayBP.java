@@ -40,6 +40,7 @@ public class WeightDecayBP extends BPAlgorithm {
             double priority = getPriority(message);
             priorityQueue.insert(message, priority, priority);
         }
+
         Thread[] workers = new Thread[threads];
         for (int i = 0; i < workers.length; i++) {
             workers[i] = new Thread(() -> {

@@ -112,7 +112,8 @@ public class WeightedHeap<K> {
     }
 
     public void changePriority(WeightedPriorityNode<K> node, double priority) {
-        node.priority = priority;
+        node.priority = priority / node.totalUpdates;
+        node.weight = priority;
         siftUp(node);
         siftDown(node);
         peek.copyFrom(heap[1]);
@@ -127,6 +128,15 @@ public class WeightedHeap<K> {
     }
 
     public boolean check() {
+        for (int i = size; i >= 1; i--) {
+            double weightChildren = Math.max(
+                    (2 * i <= size ? heap[2 * i].maxWeight : 0),
+                    (2 * i + 1 <= size ? heap[2 * i + 1].maxWeight : 0));
+            if (heap[i].maxWeight != Math.max(weightChildren, heap[i].weight)){
+                return false;
+            }
+        }
+
         for (int i = 2; i <= size; i++) {
             if (heap[i / 2].compareTo(heap[i]) > 0) {
                 return false;
