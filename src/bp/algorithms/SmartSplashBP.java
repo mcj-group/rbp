@@ -131,6 +131,9 @@ public class SmartSplashBP extends BPAlgorithm {
                     }
 
                     for (int u : affected) {
+                        if (u == v.v) {
+                            continue;
+                        }
                         if (fair) {
                             locks[u].lock();
                         }
