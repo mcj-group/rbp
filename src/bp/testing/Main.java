@@ -85,6 +85,9 @@ public class Main {
             case "weight-decay-fair":
                 algorithm = new WeightDecayBP(mrf, threads, true, sensitivity);
                 break;
+            case "slow-weight-decay":
+                algorithm = new SlowWeightDecayBP(mrf, threads, true, sensitivity);
+                break;
             case "bruteforce":
                 algorithm = new BruteforceBP(mrf);
                 break;
