@@ -1,0 +1,12 @@
+<project>
+    <target name="clean">
+        <delete dir="build"/>
+    </target>
+
+    <target name="compile">
+        <mkdir dir="bin"/>
+        <javac srcdir="src" destdir="bin"/>
+   </target>
+
+   <target name="main" depends="compile"/>
+</project>
