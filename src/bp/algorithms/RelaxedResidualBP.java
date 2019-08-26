@@ -86,7 +86,7 @@ public class RelaxedResidualBP extends BPAlgorithm {
             }
         }
 
-        System.out.println(String.format("Iterations to convergence: %d", iterations));
+        System.out.println(String.format("Iterations to convergence: %d", iterations.get()));
 
         return mrf.getNodeProbabilities();
     }
