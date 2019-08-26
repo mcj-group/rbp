@@ -49,6 +49,7 @@ public class ResidualBP extends BPAlgorithm {
                 priorityQueue.changePriority(affected, getPriority(affected));
             }
         }
+        System.out.println(String.format("Iterations to convergence: %d", it));
         return mrf.getNodeProbabilities();
     }
 }
