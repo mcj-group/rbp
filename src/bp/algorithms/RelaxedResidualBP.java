@@ -7,6 +7,7 @@ import bp.algorithms.queues.MultiPQ;
 
 import java.util.Collection;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by vaksenov on 24.07.2019.
@@ -38,6 +39,7 @@ public class RelaxedResidualBP extends BPAlgorithm {
             priorityQueue.insert(message, getPriority(message));
         }
         Thread[] workers = new Thread[threads];
+        AtomicInteger iterations = new AtomicInteger();
         for (int i = 0; i < workers.length; i++) {
             workers[i] = new Thread(() -> {
                 int it = 0;
@@ -46,6 +48,7 @@ public class RelaxedResidualBP extends BPAlgorithm {
 //                        System.err.println(it);
 //                        System.err.println(priorityQueue.peek().getValue());
                         if (priorityQueue.peek().priority < sensitivity) {
+                            iterations.addAndGet(it);
                             return;
                         }
                     }
@@ -82,6 +85,8 @@ public class RelaxedResidualBP extends BPAlgorithm {
             } catch (InterruptedException e) {
             }
         }
+
+        System.out.println(String.format("Iterations to convergence: %d", iterations));
 
         return mrf.getNodeProbabilities();
     }
