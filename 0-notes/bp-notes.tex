@@ -152,14 +152,34 @@ Following \cite{elidan2006residual}, let $\norm{\cdot}$ be an arbitrary norm on 
 We say that a function $F \colon \R^M \to \R^M$ is a \emph{$\norm{\cdot}_\infty$-contraction} if
 \[ \norm{ F(x) - F(y)}_{\infty} \le \alpha \norm{x - y}_\infty \]
 for some $0 < \alpha < 1$. Note that if $F$ is a $\norm{\cdot}_\infty$-contraction, then it has a unique fixed point $z^*$, and $\norm{ F(x) - z^*}_{\infty} \le \alpha \norm{x - z^*}_\infty$.
+Finally, we denote by $B^\infty_r(x)$ the radius–$r$ ball around $x$ in the $\norm{\cdot}_\infty$-norm, that is,
+\[ B^\infty_r(x) = \{ y \in \R^\M  \colon \norm{x - y}_\infty \le r  \}\,. \]
 
 \subsection{General graphs}
 
-\begin{theorem}
+\begin{theorem}[\cite{Bertsekas1983}]
 Assume we have a set of update rules $f_m$ such that the synchronous propagation schedule $F$ is a $\norm{\cdot}_\infty$-contraction, and let $\N_1, \N_2, \dotsc$ be an asynchronous schedule such that each message appears in the schedule infinitely often. Then the asynchronous schedule $\N_1, \N_2, \dotsc$ converges to the unique fixed point.
 \end{theorem}
 
-Elidan et al.~\cite{elidan2006residual} claims that this follows from \cite{Bertsekas1983} directly; however, the latter does not have the setting with the inner `message' norms, so this probably should be checked carefully.
+\begin{proof} We first observe that $B^\infty_r(z^*)$ is closed under partial updates. That is, if $x \in B^\infty_r(z^*)$, then for any $m \in \M$, we have that
+\begin{equation}\label{eq:coord-contraction}
+\norm{f_m(x) - z_m^*} \le \norm{F(x) - z^*}_\infty \le \alpha \norm{x - z^*}_\infty \le \alpha r\,.
+\end{equation}
+It follows that for any $\N \subseteq \M$, we have
+\[ \norm{F_\N(x) - z^*}_\infty \le \max \bigl\{ \max_{m \notin \N} \norm{x_m - z_m^*}, \max_{m \in \N} \norm{f_m(x) - z_m^*}  \bigr\} \le r\,.\]
+    
+Now fix a time $t_0$ such that $x^{t_0} \in B^\infty_r(z^*)$. We will show that there is a time $t_1 > t_0 $ such that $x^{t_1} \in B^\infty_{\alpha r}(z^*)$, which is sufficient to prove the claim. Note that by the first part of the proof, we have $x^t \in B^\infty_r(z^*)$ for all $t > t_0$.
+
+Consider any coordinate $m$, and let $t_2 > t_0$ be the first time an update includes coordinate $m$. By (\ref{eq:coord-contraction}), we have that $\norm{x^{t_2+1}_m - z_m^*} \le \alpha r$. It follow by inductions that for any time step $t > t_2$, we also have $\norm{x^{t+1}_m - z_m^*} \le \alpha r$:
+\begin{itemize}
+    \item If $m \notin \N_{t}$, then $F_{\N_{t}}(x^{t})_m = x^{t}_m$, and $\norm{x^{t}_m - z_m^*} \le \alpha r$ by induction assumption.
+    \item If $m \in \N_{t}$, then $F_{\N_{t}}(x^{t})_m = f_m(x^{t})$, and $\norm{f_m(x^{t}) - z_m^*} \le \alpha r$ by (\ref{eq:coord-contraction}).
+\end{itemize}
+Now we let $t_1$ be the first time step when after all coordinates have been updated at least once, which happens in finite time by assumption. By the above argument, all $m \in \M$ satisfy $\norm{x^{t_1}_m - z_m^*} \le \alpha r$ and thus $x^{t_1} \in B^\infty_{\alpha r}(z^*)$
+\end{proof}
+
+Local contraction property for all $m \in M$:
+\[ \norm{f_m(x) - z_m^* } \le \max_{i \in \M} \, \alpha^i_m \norm{ x_i - z_i^* }\,,\qquad \alpha^i_m < 1  \]
 
 \begin{theorem}
 Assume we have a set of update rules $f_m$ such that the synchronous propagation schedule $F$ is a $\norm{\cdot}_\infty$-contraction, let $(\N_i)^{i = 1}_\infty$ be an asynchronous schedule, and let $(\N'_i)^{i = 1}_\infty$ be a $k$-relaxed version of $(\N_i)^{i = 1}_\infty$. If $(\N_i)^{i = 1}_\infty$ converges in $T$ steps, then $(\N'_i)^{i = 1}_\infty$ converges in $kT$ steps.
