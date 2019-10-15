@@ -181,13 +181,39 @@ Now we let $t_1$ be the first time step when after all coordinates have been upd
 Local contraction property for all $m \in M$:
 \[ \norm{f_m(x) - z_m^* } \le \max_{i \in \M} \, \alpha^i_m \norm{ x_i - z_i^* }\,,\qquad \alpha^i_m < 1  \]
 
+
 \begin{theorem}
-Assume we have a set of update rules $f_m$ such that the synchronous propagation schedule $F$ is a $\norm{\cdot}_\infty$-contraction, let $(\N_i)^{i = 1}_\infty$ be an asynchronous schedule, and let $(\N'_i)^{i = 1}_\infty$ be a $k$-relaxed version of $(\N_i)^{i = 1}_\infty$. If $(\N_i)^{i = 1}_\infty$ converges in $T$ steps, then $(\N'_i)^{i = 1}_\infty$ converges in $kT$ steps.
+Assume we have a set of update rules $f_m$ such that the synchronous propagation schedule $F$ is an $\norm{\cdot}_\infty$-contraction with contraction factor $\alpha$, and let $(\N_i)_i^t = (\N_1, \N_2, \dotsc, \N_t)$ be such that
+\[ F_{\N_{t}} \circ \dotsb \circ F_{\N_{2}} \circ F_{\N_{1}} \]
+is an $\norm{\cdot}_\infty$-contraction with contraction factor $\beta$. Let $\N'_1, \N'_2, \dotsc, \N'_{t'}$ be a sequence that contains $(\N_i)_i^t$ as a subsequence. Then 
+\[ F_{\N'_{t'}} \circ \dotsb \circ F_{\N'_{2}} \circ F_{\N'_{1}} \]
+is an $\norm{\cdot}_\infty$-contraction with contraction factor $\beta' \le \beta$.
 \end{theorem}
 
-\begin{proof}
-(Sketch) At least every $k$th step is from the original schedule, and the contraction property of the synchronous schedule should imply that `wrong' choices in the relaxed schedule cannot move the values further away from the fixed point. (Compare with \cite{elidan2006residual}.)
-\end{proof}
+% \begin{proof}
+% (Sketch) At least every $k$th step is from the original schedule, and the contraction property of the synchronous schedule should imply that `wrong' choices in the relaxed schedule cannot move the values further away from the fixed point. (Compare with \cite{elidan2006residual}.)
+% \end{proof}
+
+
+% \begin{theorem}
+% Assume we have a set of update rules $f_m$ such that the synchronous propagation schedule $F$ is a $\norm{\cdot}_\infty$-contraction with contraction factor $\alpha$, and let $(\N_i)^{i = 1}_\infty$ be an asynchronous schedule such that for some $C$, we have that
+% \[ F_{\N_{C(t+1)}} \circ \dotsb \circ F_{\N_{Ct + 2}} \circ F_{\N_{Ct + 1}} \]
+% is a $\norm{\cdot}_\infty$-contraction with contraction factor $\beta$ for all $t \ge 1$.  Let $(\N'_i)^{i = 1}_\infty$ be a $k$-relaxed version of $(\N_i)^{i = 1}_\infty$ Then
+% \[ F_{\N_{kC(t+1)}} \circ \dotsb \circ F_{\N_{kCt + 2}} \circ F_{\N_{kCt + 1}}\]
+% is a $\norm{\cdot}_\infty$-contraction.
+% \end{theorem}
+
+% \begin{theorem}
+% Assume we have a set of update rules $f_m$ such that the synchronous propagation schedule $F$ is a $\norm{\cdot}_\infty$-contraction, let $(\N_i)^{i = 1}_\infty$ be an asynchronous schedule, and let $(\N'_i)^{i = 1}_\infty$ be a $k$-relaxed version of $(\N_i)^{i = 1}_\infty$. If $(\N_i)^{i = 1}_\infty$ converges in $T$ steps, then $(\N'_i)^{i = 1}_\infty$ converges in $kT$ steps.
+% \end{theorem}
+
+
+
+% \begin{theorem}
+% Assume we have a set of update rules $f_m$ such that the synchronous propagation schedule $F$ is a $\norm{\cdot}_\infty$-contraction, let $(\N_i)^{i = 1}_\infty$ be an asynchronous schedule, and let $(\N'_i)^{i = 1}_\infty$ be a $k$-relaxed version of $(\N_i)^{i = 1}_\infty$. If $(\N_i)^{i = 1}_\infty$ converges in $T$ steps, then $(\N'_i)^{i = 1}_\infty$ converges in $kT$ steps.
+% \end{theorem}
+
+
 
 \subsection{Trees}
 
