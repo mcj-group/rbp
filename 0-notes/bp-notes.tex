@@ -44,7 +44,7 @@
 \newcommand{\M}{\mathcal{M}}
 \newcommand{\N}{\mathcal{N}}
 
-\newcommand{\range}{E}
+\newcommand{\range}{D}
 
 \newcommand{\size}[1]{\left| #1 \right|}
 \newcommand{\norm}[1]{\lVert #1 \rVert}
@@ -141,6 +141,25 @@ If the graph $G$ is a tree, the algorithm is guaranteed to converge eventually a
 One possible way to generate models like this is to choose the parameters $\alpha_{ij}$ and $\beta_i$ uniformly at random from an interval $[C, -C]$ for some constant $C$. Sutton et al.~\cite{Sutton:2007:IDS:3020488.3020534} uses Potts model with $C = 5$, while Knoll et al.~\cite{10.1007/978-3-319-23525-7_18} uses Ising model with $C = N/2$.
 
 (These formulations of Ising and Potts models should be equivalent?)
+
+\paragraph{Bethe free energy.} We know that if belief propagation converges, it will converge to a stationary point of so-called \emph{Bethe free energy.} To formally define Bethe free energy, consider \emph{belief functions}
+\begin{align*}
+    b_{i} & \colon \range_i \to \Reals^+ && \text{for $i \in V$,}\\
+    b_{ij} & \colon \range_i \times \range_j \to \Reals^+ && \text{for $\{i, j\} \in E$,}
+\end{align*}
+subject to local constraints
+\[ \sum_{x_i \in \range{i}} b_i(x_i) = 1 \hspace{10mm}\text{and}\hspace{10mm} \sum_{x_j \in \range{j}} b_{ij}(x_i, x_j) = b_i(x_i)\,.\]
+Define \emph{local energies} as
+\begin{align*}
+    E_{i}(x_i) &  = - \ln \psi_i(x_i) \\
+    E_{ij}(x_i, x_j) & = - \ln \psi_{ij}(x_i, x_j) - \ln \psi_i(x_i)- \ln \psi_j(x_j)\,.
+\end{align*}
+For any belief functions $b$ as above, the Bethe free energy is defined as
+\begin{align*}
+   G(b) = & \sum_{\{i,j\}\in E} \sum_{\substack{ x_i \in \range_{i} \\ x_j \in \range_{j}}} b_{ij}(x_i,x_j) \bigl( \ln E_{ij}(x_i, x_j) - \ln b_{ij}(x_i,x_j)  \bigr) \\
+   & - \sum_{i \in V} (\deg(i) - 1) \sum_{x_i \in \range_{i}} \bigl( E_{i}(x_i) - \ln b_i(x_i) \bigr)
+\end{align*}
+The problem of minimising Bethe free energy now asks for finding the minimum of $G(b)$ over the of belief functions that satisfy the local constraints given above. Note that Bethe free energy is not necessarily convex, so one can make a distinction between finding a local minimum or finding a global minimum.
 
 
 \section{Convergence}
