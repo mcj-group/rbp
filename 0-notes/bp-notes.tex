@@ -144,8 +144,8 @@ One possible way to generate models like this is to choose the parameters $\alph
 
 \paragraph{Bethe free energy.} We know that if belief propagation converges, it will converge to a stationary point of so-called \emph{Bethe free energy.} To formally define Bethe free energy, consider \emph{belief functions}
 \begin{align*}
-    b_{i} & \colon \range_i \to \Reals^+ && \text{for $i \in V$,}\\
-    b_{ij} & \colon \range_i \times \range_j \to \Reals^+ && \text{for $\{i, j\} \in E$,}
+    b_{i} & \colon \range_i \to [0,1] && \text{for $i \in V$,}\\
+    b_{ij} & \colon \range_i \times \range_j \to [0,1] && \text{for $\{i, j\} \in E$,}
 \end{align*}
 subject to local constraints
 \[ \sum_{x_i \in \range{i}} b_i(x_i) = 1 \hspace{10mm}\text{and}\hspace{10mm} \sum_{x_j \in \range{j}} b_{ij}(x_i, x_j) = b_i(x_i)\,.\]
