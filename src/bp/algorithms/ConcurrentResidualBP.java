@@ -6,6 +6,7 @@ import bp.MRF.Utils;
 import bp.algorithms.queues.SequentialPQ;
 
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -37,6 +38,7 @@ public class ConcurrentResidualBP extends BPAlgorithm {
         for (Message message : messages) {
             priorityQueue.insert(message, getPriority(message));
         }
+        AtomicInteger iterations = new AtomicInteger();
         Thread[] workers = new Thread[threads];
         for (int i = 0; i < workers.length; i++) {
             workers[i] = new Thread(() -> {
@@ -45,6 +47,7 @@ public class ConcurrentResidualBP extends BPAlgorithm {
                     if (++it % 10 == 0) {
                         synchronized (priorityQueue) {
                             if (priorityQueue.peek().priority < sensitivity) {
+                                iterations.addAndGet(it);
                                 return;
                             }
                         }
@@ -96,6 +99,8 @@ public class ConcurrentResidualBP extends BPAlgorithm {
             } catch (InterruptedException e) {
             }
         }
+
+        System.out.println(String.format("Iterations to convergence: %d", iterations.get()));
 
         return mrf.getNodeProbabilities();
     }

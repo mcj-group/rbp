@@ -22,11 +22,19 @@ public class Message extends IdentifiedClass {
         this.j = j;
 
         this.e = e;
-        this.logMu = new double[e.potentials[0].length];
+        if (e.u == i) {
+            this.logMu = new double[e.potentials[0].length];
+        } else {
+            this.logMu = new double[e.potentials.length];
+        }
         Arrays.fill(logMu, Math.log(1. / logMu.length));
     }
 
     public double getPotential(int vi, int vj) {
         return e.getPotential(i, j, vi, vj);
+    }
+
+    public double getLogPotential(int vi, int vj) {
+        return e.getLogPotential(i, j, vi, vj);
     }
 }

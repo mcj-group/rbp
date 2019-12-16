@@ -12,6 +12,7 @@ public class MRF {
     int nodes;
     int messageId;
     double[][] nodePotentials;
+    double[][] logNodePotentials;
     ArrayList<Edge> edges;
     ArrayList<Message> messages;
     ArrayList<Message>[] messagesFrom;
@@ -43,6 +44,7 @@ public class MRF {
     public MRF(int nodes) {
         this.nodes = nodes;
         nodePotentials = new double[nodes][];
+        logNodePotentials = new double[nodes][];
         edges = new ArrayList<>();
         messagesFrom = new ArrayList[nodes];
         messagesTo = new ArrayList[nodes];
@@ -57,6 +59,12 @@ public class MRF {
     public MRF(int nodes, double[][] potentials) {
         this(nodes);
         nodePotentials = potentials;
+        logNodePotentials = new double[potentials.length][potentials[0].length];
+        for (int i = 0; i < logNodePotentials.length; i++) {
+            for (int j = 0; j < logNodePotentials[i].length; j++) {
+                logNodePotentials[i][j] = Math.log(nodePotentials[i][j]);
+            }
+        }
         for (int i = 0; i < logProductIn.length; i++) {
             logProductIn[i] = new double[potentials[i].length];
         }
@@ -72,6 +80,10 @@ public class MRF {
 
     public void setNodePotential(int v, double[] potentials) {
         nodePotentials[v] = potentials;
+        logNodePotentials[v] = new double[potentials.length];
+        for (int i = 0; i < potentials.length; i++) {
+            logNodePotentials[v][i] = Math.log(potentials[i]);
+        }
         logProductIn[v] = new double[potentials.length];
     }
 
@@ -118,11 +130,20 @@ public class MRF {
 
         double[] result = new double[nodePotentials[j].length];
 
+//        double[] precalc = new double[nodePotentials[i].length];
+//        for (int vali = 0; vali < precalc.length; vali++) {
+//            precalc[vali] = Math.log(nodePotentials[i][vali])
+//                    + (logProductIn[i][vali] - reverseMessage.logMu[vali]);
+//        }
+
+        double[] logsIn = new double[nodePotentials[i].length];
         for (int valj = 0; valj < nodePotentials[j].length; valj++) {
-            double[] logsIn = new double[nodePotentials[i].length];
             for (int vali = 0; vali < logsIn.length; vali++) {
-                logsIn[vali] = Math.log(m.getPotential(vali, valj)) + Math.log(nodePotentials[i][vali])
+//                logsIn[vali] = Math.log(m.getPotential(vali, valj)) + Math.log(nodePotentials[i][vali])
+//                        + (logProductIn[i][vali] - reverseMessage.logMu[vali]);
+                logsIn[vali] = m.getLogPotential(vali, valj) + logNodePotentials[i][vali]
                         + (logProductIn[i][vali] - reverseMessage.logMu[vali]);
+//                logsIn[vali] = m.getLogPotential(vali, valj) + precalc[vali];
 //                ;for (Message message : messagesTo[i]) {
 //                    if (message.i != j) {
 //                        logsIn[vali] += message.logMu[vali];
@@ -145,7 +166,7 @@ public class MRF {
             logProductIn[j][valj] += -m.logMu[valj] + newLogMu[valj];
             m.logMu[valj] = newLogMu[valj];
         }
-        m.logMu = Arrays.copyOf(newLogMu, newLogMu.length);
+//        m.logMu = Arrays.copyOf(newLogMu, newLogMu.length);
     }
 
     public void updateMessage(Message e) {

@@ -29,6 +29,9 @@ public class Main {
             case "tree":
                 mrf = ExamplesMRF.randomTree(size, 5, 1);
                 break;
+            case "ldpc":
+                mrf = ExamplesMRF.LDPCCodes(size, 3, 6, 0.07, 1);
+                break;
             case "example":
                 mrf = ExamplesMRF.residualPaperExample();
                 break;
@@ -38,66 +41,30 @@ public class Main {
 
         double sensitivity = 1e-5;
 
-        BPAlgorithm algorithm;
-        switch (args[0]) {
-            case "residual":
-                algorithm = new ResidualBP(mrf, sensitivity);
-                break;
-            case "synchronous":
-                algorithm = new SynchronousBP(mrf, sensitivity);
-                break;
-            case "concurrent-unfair":
-                algorithm = new ConcurrentResidualBP(mrf, threads, false, sensitivity);
-                break;
-            case "concurrent-fair":
-                algorithm = new ConcurrentResidualBP(mrf, threads, true, sensitivity);
-                break;
-            case "relaxed-unfair":
-                algorithm = new RelaxedResidualBP(mrf, threads, false, sensitivity);
-                break;
-            case "relaxed-fair":
-                algorithm = new RelaxedResidualBP(mrf, threads, true, sensitivity);
-                break;
-            case "splash-unfair":
-                algorithm = new SplashBP(mrf, Integer.parseInt(args[4]), threads, false, false, sensitivity);
-                break;
-            case "splash-fair":
-                algorithm = new SplashBP(mrf, Integer.parseInt(args[4]), threads,true, false, sensitivity);
-                break;
-            case "relaxed-splash-unfair":
-                algorithm = new SplashBP(mrf, Integer.parseInt(args[4]), threads, false, true, sensitivity);
-                break;
-            case "relaxed-splash-fair":
-                algorithm = new SplashBP(mrf, Integer.parseInt(args[4]), threads, true, true, sensitivity);
-                break;
-            case "relaxed-smart-splash-unfair":
-                algorithm = new SmartSplashBP(mrf, Integer.parseInt(args[4]), threads, false, true, sensitivity);
-                break;
-            case "relaxed-smart-splash-fair":
-                algorithm = new SmartSplashBP(mrf, Integer.parseInt(args[4]), threads, true, true, sensitivity);
-                break;
-            case "relaxed-priority-fair":
-                algorithm = new RelaxedPriorityBP(mrf, threads, true, true, sensitivity);
-                break;
-            case "smart-relaxed-priority-fair":
-                algorithm = new SmartRelaxedPriorityBP(mrf, threads, true, true, sensitivity);
-                break;
-            case "weight-decay-fair":
-                algorithm = new WeightDecayBP(mrf, threads, true, sensitivity);
-                break;
-            case "slow-weight-decay":
-                algorithm = new SlowWeightDecayBP(mrf, threads, true, sensitivity);
-                break;
-            case "bruteforce":
-                algorithm = new BruteforceBP(mrf);
-                break;
-            default:
-                throw new AssertionError(String.format("Algorithm %s is not supported", args[0]));
-        }
+        BPAlgorithm algorithm = BPAlgorithm.getAlgorithm(args[0], mrf, sensitivity,
+                threads, (String[]) Arrays.copyOf(args, 4));
 
         long start = System.currentTimeMillis();
         double[][] res = algorithm.solve();
         long end = System.currentTimeMillis();
+
+        if (args[1].equals("ldpc")) {
+            int nonZeros = 0;
+            for (int i = 0; i < size - 3; i++) {
+                if (res[i][0] < res[i][1]) {
+                    System.err.println("Fuck! " + i + " " + Arrays.toString(res[i]));
+                    nonZeros++;
+                }
+            }
+            System.err.println("Number of non zeros: " + nonZeros);
+            boolean check = ExamplesMRF.LDPCCodesCheckCorrectness(res);
+            if (!check) {
+                System.err.println("This is not a codeword!");
+            } else {
+                System.err.println("This is a codeword");
+            }
+        }
+
 /*        try {
             PrintWriter out = new PrintWriter(String.format("results/%s-%d-%s-%d.txt", args[0], threads, args[1], size));
             out.println(Arrays.deepToString(res));

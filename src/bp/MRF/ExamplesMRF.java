@@ -1,7 +1,10 @@
 package bp.MRF;
 
-import java.util.Arrays;
-import java.util.Random;
+import ldpccodes.LDPCCode;
+import ldpccodes.LDPCCodeGenerator;
+import ldpccodes.LDPCMRFGenerator;
+
+import java.util.*;
 
 /**
  * Created by vaksenov on 24.07.2019.
@@ -154,5 +157,43 @@ public class ExamplesMRF {
         mrf.addEdge(1, 2, new double[][] {{1, 0.5}, {0.5, 0.5}});
         mrf.addEdge(2, 3, new double[][] {{1,  .5}, {.5, 1}});
         return mrf;
+    }
+
+    /* LDPC code information */
+    public static LDPCCode code;
+
+    /* Length n, (k, l)-LDPC code */
+    public static MRF LDPCCodes(int n, int k, int l, double e, int seed) {
+        code = LDPCCodeGenerator.generateLDPCCode(n, k, l, seed);
+        return LDPCMRFGenerator.generateMRF(code, e, seed);
+    }
+
+    public static boolean LDPCCodesCheckCorrectness(double[][] res) {
+        int n = code.n;
+        int k = code.k;
+        int l = code.l;
+
+        int m = (n * k) / l;
+
+        ArrayList<Integer> permutation = code.permutation;
+
+        int[] y = new int[n];
+        for (int i = 0; i < y.length; i++) {
+            if (res[i][0] < res[i][1]) {
+                y[i] = 1;
+            }
+        }
+
+        for (int i = 0; i < m; i++) {
+            int sum = 0;
+            for (int j = 0; j < l; j++) {
+                int z = permutation.get(i * l + j) / k;
+                sum += y[z];
+            }
+            if (sum % 2 == 1) {
+                return false;
+            }
+        }
+        return true;
     }
 }

@@ -32,7 +32,8 @@ public class ResidualBP extends BPAlgorithm {
 
         int it = 0;
         while (priorityQueue.peek().priority > sensitivity) {
-/*            if (++it % 100000 == 0) {
+            it++;
+/*            if (it % 100000 == 0) {
                 System.err.println(String.format("Iteration %d with maximal error %f", it,
                         priorityQueue.peek().priority));
             }*/

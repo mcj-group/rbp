@@ -7,7 +7,11 @@ import java.util.Arrays;
  */
 public class Utils {
     public static double logSum(double[] logs) {
-        double maxLog = Arrays.stream(logs).max().getAsDouble();
+//        double maxLog = Arrays.stream(logs).max().getAsDouble();
+        double maxLog = Double.NEGATIVE_INFINITY;
+        for (double log : logs) {
+            maxLog = Math.max(maxLog, log);
+        }
         double sumExp = 0;
         for (double x : logs) {
             sumExp += Math.exp(x - maxLog);
