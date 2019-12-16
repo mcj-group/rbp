@@ -44,7 +44,7 @@
 \newcommand{\M}{\mathcal{M}}
 \newcommand{\N}{\mathcal{N}}
 
-\newcommand{\range}{E}
+\newcommand{\range}{D}
 
 \newcommand{\size}[1]{\left| #1 \right|}
 \newcommand{\norm}[1]{\lVert #1 \rVert}
@@ -142,6 +142,25 @@ One possible way to generate models like this is to choose the parameters $\alph
 
 (These formulations of Ising and Potts models should be equivalent?)
 
+\paragraph{Bethe free energy.} We know that if belief propagation converges, it will converge to a stationary point of so-called \emph{Bethe free energy.} To formally define Bethe free energy, consider \emph{belief functions}
+\begin{align*}
+    b_{i} & \colon \range_i \to [0,1] && \text{for $i \in V$,}\\
+    b_{ij} & \colon \range_i \times \range_j \to [0,1] && \text{for $\{i, j\} \in E$,}
+\end{align*}
+subject to local constraints
+\[ \sum_{x_i \in \range{i}} b_i(x_i) = 1 \hspace{10mm}\text{and}\hspace{10mm} \sum_{x_j \in \range{j}} b_{ij}(x_i, x_j) = b_i(x_i)\,.\]
+Define \emph{local energies} as
+\begin{align*}
+    E_{i}(x_i) &  = - \ln \psi_i(x_i) \\
+    E_{ij}(x_i, x_j) & = - \ln \psi_{ij}(x_i, x_j) - \ln \psi_i(x_i)- \ln \psi_j(x_j)\,.
+\end{align*}
+For any belief functions $b$ as above, the Bethe free energy is defined as
+\begin{align*}
+   G(b) = & \sum_{\{i,j\}\in E} \sum_{\substack{ x_i \in \range_{i} \\ x_j \in \range_{j}}} b_{ij}(x_i,x_j) \bigl( \ln E_{ij}(x_i, x_j) - \ln b_{ij}(x_i,x_j)  \bigr) \\
+   & - \sum_{i \in V} (\deg(i) - 1) \sum_{x_i \in \range_{i}} \bigl( E_{i}(x_i) - \ln b_i(x_i) \bigr)
+\end{align*}
+The problem of minimising Bethe free energy now asks for finding the minimum of $G(b)$ over the of belief functions that satisfy the local constraints given above. Note that Bethe free energy is not necessarily convex, so one can make a distinction between finding a local minimum or finding a global minimum.
+
 
 \section{Convergence}
 
@@ -152,22 +171,68 @@ Following \cite{elidan2006residual}, let $\norm{\cdot}$ be an arbitrary norm on 
 We say that a function $F \colon \R^M \to \R^M$ is a \emph{$\norm{\cdot}_\infty$-contraction} if
 \[ \norm{ F(x) - F(y)}_{\infty} \le \alpha \norm{x - y}_\infty \]
 for some $0 < \alpha < 1$. Note that if $F$ is a $\norm{\cdot}_\infty$-contraction, then it has a unique fixed point $z^*$, and $\norm{ F(x) - z^*}_{\infty} \le \alpha \norm{x - z^*}_\infty$.
+Finally, we denote by $B^\infty_r(x)$ the radius–$r$ ball around $x$ in the $\norm{\cdot}_\infty$-norm, that is,
+\[ B^\infty_r(x) = \{ y \in \R^\M  \colon \norm{x - y}_\infty \le r  \}\,. \]
 
 \subsection{General graphs}
 
-\begin{theorem}
+\begin{theorem}[\cite{Bertsekas1983}]
 Assume we have a set of update rules $f_m$ such that the synchronous propagation schedule $F$ is a $\norm{\cdot}_\infty$-contraction, and let $\N_1, \N_2, \dotsc$ be an asynchronous schedule such that each message appears in the schedule infinitely often. Then the asynchronous schedule $\N_1, \N_2, \dotsc$ converges to the unique fixed point.
 \end{theorem}
 
-Elidan et al.~\cite{elidan2006residual} claims that this follows from \cite{Bertsekas1983} directly; however, the latter does not have the setting with the inner `message' norms, so this probably should be checked carefully.
+\begin{proof} We first observe that $B^\infty_r(z^*)$ is closed under partial updates. That is, if $x \in B^\infty_r(z^*)$, then for any $m \in \M$, we have that
+\begin{equation}\label{eq:coord-contraction}
+\norm{f_m(x) - z_m^*} \le \norm{F(x) - z^*}_\infty \le \alpha \norm{x - z^*}_\infty \le \alpha r\,.
+\end{equation}
+It follows that for any $\N \subseteq \M$, we have
+\[ \norm{F_\N(x) - z^*}_\infty \le \max \bigl\{ \max_{m \notin \N} \norm{x_m - z_m^*}, \max_{m \in \N} \norm{f_m(x) - z_m^*}  \bigr\} \le r\,.\]
+    
+Now fix a time $t_0$ such that $x^{t_0} \in B^\infty_r(z^*)$. We will show that there is a time $t_1 > t_0 $ such that $x^{t_1} \in B^\infty_{\alpha r}(z^*)$, which is sufficient to prove the claim. Note that by the first part of the proof, we have $x^t \in B^\infty_r(z^*)$ for all $t > t_0$.
+
+Consider any coordinate $m$, and let $t_2 > t_0$ be the first time an update includes coordinate $m$. By (\ref{eq:coord-contraction}), we have that $\norm{x^{t_2+1}_m - z_m^*} \le \alpha r$. It follow by inductions that for any time step $t > t_2$, we also have $\norm{x^{t+1}_m - z_m^*} \le \alpha r$:
+\begin{itemize}
+    \item If $m \notin \N_{t}$, then $F_{\N_{t}}(x^{t})_m = x^{t}_m$, and $\norm{x^{t}_m - z_m^*} \le \alpha r$ by induction assumption.
+    \item If $m \in \N_{t}$, then $F_{\N_{t}}(x^{t})_m = f_m(x^{t})$, and $\norm{f_m(x^{t}) - z_m^*} \le \alpha r$ by (\ref{eq:coord-contraction}).
+\end{itemize}
+Now we let $t_1$ be the first time step when after all coordinates have been updated at least once, which happens in finite time by assumption. By the above argument, all $m \in \M$ satisfy $\norm{x^{t_1}_m - z_m^*} \le \alpha r$ and thus $x^{t_1} \in B^\infty_{\alpha r}(z^*)$
+\end{proof}
+
+Local contraction property for all $m \in M$:
+\[ \norm{f_m(x) - z_m^* } \le \max_{i \in \M} \, \alpha^i_m \norm{ x_i - z_i^* }\,,\qquad \alpha^i_m < 1  \]
+
 
 \begin{theorem}
-Assume we have a set of update rules $f_m$ such that the synchronous propagation schedule $F$ is a $\norm{\cdot}_\infty$-contraction, let $(\N_i)^{i = 1}_\infty$ be an asynchronous schedule, and let $(\N'_i)^{i = 1}_\infty$ be a $k$-relaxed version of $(\N_i)^{i = 1}_\infty$. If $(\N_i)^{i = 1}_\infty$ converges in $T$ steps, then $(\N'_i)^{i = 1}_\infty$ converges in $kT$ steps.
+Assume we have a set of update rules $f_m$ such that the synchronous propagation schedule $F$ is an $\norm{\cdot}_\infty$-contraction with contraction factor $\alpha$, and let $(\N_i)_i^t = (\N_1, \N_2, \dotsc, \N_t)$ be such that
+\[ F_{\N_{t}} \circ \dotsb \circ F_{\N_{2}} \circ F_{\N_{1}} \]
+is an $\norm{\cdot}_\infty$-contraction with contraction factor $\beta$. Let $\N'_1, \N'_2, \dotsc, \N'_{t'}$ be a sequence that contains $(\N_i)_i^t$ as a subsequence. Then 
+\[ F_{\N'_{t'}} \circ \dotsb \circ F_{\N'_{2}} \circ F_{\N'_{1}} \]
+is an $\norm{\cdot}_\infty$-contraction with contraction factor $\beta' \le \beta$.
 \end{theorem}
 
-\begin{proof}
-(Sketch) At least every $k$th step is from the original schedule, and the contraction property of the synchronous schedule should imply that `wrong' choices in the relaxed schedule cannot move the values further away from the fixed point. (Compare with \cite{elidan2006residual}.)
-\end{proof}
+% \begin{proof}
+% (Sketch) At least every $k$th step is from the original schedule, and the contraction property of the synchronous schedule should imply that `wrong' choices in the relaxed schedule cannot move the values further away from the fixed point. (Compare with \cite{elidan2006residual}.)
+% \end{proof}
+
+
+% \begin{theorem}
+% Assume we have a set of update rules $f_m$ such that the synchronous propagation schedule $F$ is a $\norm{\cdot}_\infty$-contraction with contraction factor $\alpha$, and let $(\N_i)^{i = 1}_\infty$ be an asynchronous schedule such that for some $C$, we have that
+% \[ F_{\N_{C(t+1)}} \circ \dotsb \circ F_{\N_{Ct + 2}} \circ F_{\N_{Ct + 1}} \]
+% is a $\norm{\cdot}_\infty$-contraction with contraction factor $\beta$ for all $t \ge 1$.  Let $(\N'_i)^{i = 1}_\infty$ be a $k$-relaxed version of $(\N_i)^{i = 1}_\infty$ Then
+% \[ F_{\N_{kC(t+1)}} \circ \dotsb \circ F_{\N_{kCt + 2}} \circ F_{\N_{kCt + 1}}\]
+% is a $\norm{\cdot}_\infty$-contraction.
+% \end{theorem}
+
+% \begin{theorem}
+% Assume we have a set of update rules $f_m$ such that the synchronous propagation schedule $F$ is a $\norm{\cdot}_\infty$-contraction, let $(\N_i)^{i = 1}_\infty$ be an asynchronous schedule, and let $(\N'_i)^{i = 1}_\infty$ be a $k$-relaxed version of $(\N_i)^{i = 1}_\infty$. If $(\N_i)^{i = 1}_\infty$ converges in $T$ steps, then $(\N'_i)^{i = 1}_\infty$ converges in $kT$ steps.
+% \end{theorem}
+
+
+
+% \begin{theorem}
+% Assume we have a set of update rules $f_m$ such that the synchronous propagation schedule $F$ is a $\norm{\cdot}_\infty$-contraction, let $(\N_i)^{i = 1}_\infty$ be an asynchronous schedule, and let $(\N'_i)^{i = 1}_\infty$ be a $k$-relaxed version of $(\N_i)^{i = 1}_\infty$. If $(\N_i)^{i = 1}_\infty$ converges in $T$ steps, then $(\N'_i)^{i = 1}_\infty$ converges in $kT$ steps.
+% \end{theorem}
+
+
 
 \subsection{Trees}
 
