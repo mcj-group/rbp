@@ -62,13 +62,62 @@ public class SynchronousBP  extends BPAlgorithm{
                 }catch (InterruptedException e) {}
             }
 
-            for (Message message : messages) {
-                if (Utils.distance(message.logMu, new_mu[message.id]) > sensitivity) {
-                    updated = true;
-                    updates++;
-                }
-                mrf.updateMessage(message, new_mu[message.id]);
+            final boolean[] updatedThread = new boolean[this.threads];
+            final int[] updatesThread = new int[this.threads];
+            for (int i = 0; i < this.threads; i++) {
+                int id = i;
+                threads[i] = new Thread(() -> {
+                   for (int j = len * id; j < Math.min(len * (id + 1), messages.size()); j++) {
+                       Message message = messages.get(j);
+                       if (Utils.distance(message.logMu, new_mu[message.id]) > sensitivity) {
+                           updatedThread[id] = true;
+                           updatesThread[id]++;
+                       }
+                       mrf.copyMessage(message, new_mu[message.id]);
+                   }
+                });
+                threads[i].start();
             }
+
+            for (int i = 0; i < this.threads; i++) {
+                try {
+                    threads[i].join();
+                    updated |= updatedThread[i];
+                    updates += updatesThread[i];
+                } catch (InterruptedException e) {
+                }
+            }
+
+            int lenNodes = (mrf.getNodes() + this.threads - 1) / this.threads;
+            for (int i = 0; i < this.threads; i++) {
+                int id = i;
+                threads[i] = new Thread(() -> {
+                   for (int j = lenNodes * id; j < Math.min(lenNodes * (id + 1), mrf.getNodes()); j++) {
+                       mrf.updateNodeSum(j);
+                   }
+                });
+                threads[i].start();
+            }
+
+            for (int i = 0; i < this.threads; i++) {
+                try {
+                    threads[i].join();
+                } catch (InterruptedException e) {
+
+                }
+            }
+
+//            for (Message message : messages) {
+//                new_mu[message.id] = mrf.getFutureMessage(message);
+//            }
+//
+//            for (Message message : messages) {
+//                if (Utils.distance(message.logMu, new_mu[message.id]) > sensitivity) {
+//                    updated = true;
+//                    updates++;
+//                }
+//                mrf.updateMessage(message, new_mu[message.id]);
+//            }
         }
         System.out.println("Updates: " + updates);
         return mrf.getNodeProbabilities();

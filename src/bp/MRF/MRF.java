@@ -169,6 +169,23 @@ public class MRF {
 //        m.logMu = Arrays.copyOf(newLogMu, newLogMu.length);
     }
 
+    public void copyMessage(Message m, double[] newLogMu) {
+        for (int val = 0; val < m.logMu.length; val++){
+            m.logMu[val] = newLogMu[val];
+        }
+    }
+
+    public void updateNodeSum(int i) {
+        for (int vali = 0; vali < nodePotentials[i].length; vali++) {
+            logProductIn[i][vali] = 0;
+        }
+        for (Message message: messagesTo[i]) {
+            for (int vali = 0; vali < nodePotentials[i].length; vali++) {
+                logProductIn[i][vali] += message.logMu[vali];
+            }
+        }
+    }
+
     public void updateMessage(Message e) {
         updateMessage(e, getFutureMessage(e));
     }
