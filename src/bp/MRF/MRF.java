@@ -193,10 +193,10 @@ public class MRF {
     public double evaluateEnergy(int[] nodeValues) {
         double log = 0;
         for (int i = 0; i < nodes; i++) {
-            log += Math.log(nodePotentials[i][nodeValues[i]]);
+            log += logNodePotentials[i][nodeValues[i]];
         }
         for (Edge e : edges) {
-            log += Math.log(e.getPotential(e.u, e.v, nodeValues[e.u], nodeValues[e.v]));
+            log += e.getLogPotential(e.u, e.v, nodeValues[e.u], nodeValues[e.v]);
         }
         return Math.exp(log);
     }
@@ -206,7 +206,7 @@ public class MRF {
         for (int i = 0; i < nodes; i++) {
             answer[i] = new double[nodePotentials[i].length];
             for (int vali = 0; vali < answer[i].length; vali++) {
-                answer[i][vali] = Math.log(nodePotentials[i][vali]) + logProductIn[i][vali];
+                answer[i][vali] = logNodePotentials[i][vali] + logProductIn[i][vali];
             }
             double sum = Utils.logSum(answer[i]);
             for (int vali = 0; vali < answer[i].length; vali++) {
