@@ -10,7 +10,7 @@ import java.util.Collection;
 /**
  * Created by vaksenov on 24.07.2019.
  */
-public class SynchronousBP  extends BPAlgorithm{
+public class SynchronousBP extends BPAlgorithm {
     double sensitivity;
     int threads;
 
@@ -59,7 +59,8 @@ public class SynchronousBP  extends BPAlgorithm{
             for (int i = 0; i < this.threads; i++) {
                 try {
                     threads[i].join();
-                }catch (InterruptedException e) {}
+                } catch (InterruptedException e) {
+                }
             }
 
             final boolean[] updatedThread = new boolean[this.threads];
@@ -67,14 +68,18 @@ public class SynchronousBP  extends BPAlgorithm{
             for (int i = 0; i < this.threads; i++) {
                 int id = i;
                 threads[i] = new Thread(() -> {
-                   for (int j = len * id; j < Math.min(len * (id + 1), messages.size()); j++) {
-                       Message message = messages.get(j);
-                       if (Utils.distance(message.logMu, new_mu[message.id]) > sensitivity) {
-                           updatedThread[id] = true;
-                           updatesThread[id]++;
-                       }
-                       mrf.copyMessage(message, new_mu[message.id]);
-                   }
+                    boolean updatedLocal = false;
+                    int updatesLocal = 0;
+                    for (int j = len * id; j < Math.min(len * (id + 1), messages.size()); j++) {
+                        Message message = messages.get(j);
+                        if (Utils.distance(message.logMu, new_mu[message.id]) > sensitivity) {
+                            updatedLocal = true;
+                            updatesLocal++;
+                        }
+                        mrf.copyMessage(message, new_mu[message.id]);
+                    }
+                    updatedThread[id] = updatedLocal;
+                    updatesThread[id] = updatesLocal;
                 });
                 threads[i].start();
             }
@@ -92,9 +97,9 @@ public class SynchronousBP  extends BPAlgorithm{
             for (int i = 0; i < this.threads; i++) {
                 int id = i;
                 threads[i] = new Thread(() -> {
-                   for (int j = lenNodes * id; j < Math.min(lenNodes * (id + 1), mrf.getNodes()); j++) {
-                       mrf.updateNodeSum(j);
-                   }
+                    for (int j = lenNodes * id; j < Math.min(lenNodes * (id + 1), mrf.getNodes()); j++) {
+                        mrf.updateNodeSum(j);
+                    }
                 });
                 threads[i].start();
             }
