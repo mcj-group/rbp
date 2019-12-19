@@ -26,6 +26,12 @@ public class Main {
             case "chain":
                 mrf = ExamplesMRF.chain(size, 5, 1);
                 break;
+            case "isingChain":
+                mrf = ExamplesMRF.IsingMRF(1, size, 2, 1);
+                break;
+            case "deterministicChain":
+                mrf = ExamplesMRF.deterministicChain(size);
+                break;
             case "tree":
                 mrf = ExamplesMRF.randomTree(size, 5, 1);
                 break;
