@@ -9,6 +9,7 @@ import bp.algorithms.queues.weighted.WeightedPriorityNode;
 
 import java.util.Collection;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by vaksenov on 24.07.2019.
@@ -41,6 +42,7 @@ public class WeightDecayBP extends BPAlgorithm {
             priorityQueue.insert(message, priority, priority);
         }
 
+        AtomicInteger iterations = new AtomicInteger();
         Thread[] workers = new Thread[threads];
         for (int i = 0; i < workers.length; i++) {
             workers[i] = new Thread(() -> {
@@ -50,6 +52,7 @@ public class WeightDecayBP extends BPAlgorithm {
 //                        System.err.println(it);
 //                        System.err.println(priorityQueue.peek().getValue());
                         if (priorityQueue.peek().maxWeight < sensitivity) {
+                            iterations.addAndGet(it);
                             return;
                         }
                     }
@@ -94,6 +97,8 @@ public class WeightDecayBP extends BPAlgorithm {
             } catch (InterruptedException e) {
             }
         }
+
+        System.out.println(String.format("Iterations to convergence: %d", iterations.get()));
 
         return mrf.getNodeProbabilities();
     }
