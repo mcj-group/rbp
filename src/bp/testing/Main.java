@@ -48,7 +48,7 @@ public class Main {
         double sensitivity = 1e-5;
 
         BPAlgorithm algorithm = BPAlgorithm.getAlgorithm(args[0], mrf, sensitivity,
-                threads, (String[]) Arrays.copyOf(args, 4));
+                threads, (String[]) Arrays.copyOfRange(args, 4, args.length));
 
         long start = System.currentTimeMillis();
         double[][] res = algorithm.solve();
