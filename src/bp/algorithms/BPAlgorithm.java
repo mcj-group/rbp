@@ -32,6 +32,10 @@ public abstract class BPAlgorithm {
                 return new SplashBP(mrf, Integer.parseInt(args[0]), threads, false, false, sensitivity);
             case "splash-fair":
                 return new SplashBP(mrf, Integer.parseInt(args[0]), threads, true, false, sensitivity);
+            case "smart-splash-unfair":
+                return new SmartSplashBP(mrf, Integer.parseInt(args[0]), threads, false, false, sensitivity);
+            case "smart-splash-fair":
+                return new SmartSplashBP(mrf, Integer.parseInt(args[0]), threads, true, false, sensitivity);
             case "relaxed-splash-unfair":
                 return new SplashBP(mrf, Integer.parseInt(args[0]), threads, false, true, sensitivity);
             case "relaxed-splash-fair":
