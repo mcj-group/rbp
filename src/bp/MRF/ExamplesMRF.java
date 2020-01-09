@@ -122,13 +122,13 @@ public class ExamplesMRF {
 
     public static MRF deterministicChain(int n) {
         MRF mrf = new MRF(n);
-        mrf.setNodePotential(0, new double[]{0, 1});
+        mrf.setNodePotential(0, new double[]{0.1, 0.9});
         for (int i = 1; i < n; i++) {
-            mrf.setNodePotential(0, new double[]{0.5, 0.5});
+            mrf.setNodePotential(i, new double[]{0.5, 0.5});
         }
 
         for (int i = 0; i < n - 1; i++) {
-            mrf.addEdge(i, i + 1, new double[][]{{0.25, 0.25}, {0.25, 0.25}});
+            mrf.addEdge(i, i + 1, new double[][]{{1, 0}, {0, 1}});
         }
         return mrf;
     }
@@ -155,6 +155,19 @@ public class ExamplesMRF {
                 }
             }
             mrf.addEdge(i, p, potential);
+        }
+        return mrf;
+    }
+
+    public static MRF deterministicTree(int n) {
+        MRF mrf = new MRF(n);
+        mrf.setNodePotential(0, new double[] { 0.1, 0.9 });
+        for (int i = 1; i < n; i++) {
+            mrf.setNodePotential(i, new double[] { 0.5, 0.5 });
+        }
+
+        for (int i = 2; i <= n; i++) {
+            mrf.addEdge(i - 1, i / 2 - 1, new double[][] {{1, 0}, {0, 1}});
         }
         return mrf;
     }

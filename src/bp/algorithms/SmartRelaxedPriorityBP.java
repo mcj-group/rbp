@@ -5,7 +5,9 @@ import bp.MRF.MRF;
 import bp.MRF.Utils;
 import bp.algorithms.queues.*;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -29,7 +31,7 @@ public class SmartRelaxedPriorityBP extends BPAlgorithm {
         double v = Double.NEGATIVE_INFINITY;
         for (int vali = 0; vali < mrf.getNumberOfValues(m.i); vali++) {
             for (int valj = 0; valj < mrf.getNumberOfValues(m.j); valj++) {
-                v = Math.max(v, 2 * Math.abs(Math.log(m.getPotential(vali, valj))));
+                v = Math.max(v, 2 * Math.abs(m.getPotential(vali, valj)));
             }
         }
         return v;
@@ -41,6 +43,10 @@ public class SmartRelaxedPriorityBP extends BPAlgorithm {
             res = Math.max(res, Math.abs(future[i] - m.logMu[i]));
         }
         return res;
+    }
+
+    private double getPriority(Message e) {
+        return Utils.distance(e.logMu, mrf.getFutureMessage(e));
     }
 
     public double[][] solve() {
@@ -60,12 +66,14 @@ public class SmartRelaxedPriorityBP extends BPAlgorithm {
         }
 
         Thread[] workers = new Thread[threads];
+        AtomicInteger iterations = new AtomicInteger();
         for (int i = 0; i < workers.length; i++) {
             workers[i] = new Thread(() -> {
                 int it = 0;
                 while (true) {
                     if (++it % 1000 == 0) {
                         if (priorityQueue.peek().priority < sensitivity) {
+                            iterations.addAndGet(it);
                             return;
                         }
                     }
@@ -82,6 +90,9 @@ public class SmartRelaxedPriorityBP extends BPAlgorithm {
 
                     double r = getResidual(m, futureM);
 
+//                    System.err.println("m: " + Arrays.toString(m.logMu));
+//                    System.err.println("futureM: " + Arrays.toString(futureM));
+
                     mrf.updateMessage(m, futureM);
 
                     Collection<Message> messagesFromJ = mrf.getMessagesFrom(m.j);
@@ -92,6 +103,9 @@ public class SmartRelaxedPriorityBP extends BPAlgorithm {
                         currentPriority[affected.id] += r;
                         priorityQueue.changePriority(affected, currentPriority[affected.id]);
                     }
+
+//                    System.err.println(Arrays.toString(currentPriority));
+//                    System.err.println(r);
 
                     currentPriority[m.id] = r;
                     priorityQueue.insert(m, r);
@@ -110,6 +124,8 @@ public class SmartRelaxedPriorityBP extends BPAlgorithm {
             } catch (InterruptedException e) {
             }
         }
+
+        System.out.println(String.format("Updates: %d", iterations.get()));
 
         return mrf.getNodeProbabilities();
     }

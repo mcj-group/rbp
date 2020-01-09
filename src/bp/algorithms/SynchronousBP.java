@@ -36,7 +36,7 @@ public class SynchronousBP extends BPAlgorithm {
         int updates = 0;
         boolean updated = true;
         while (updated) {
-            System.err.println(it);
+//            System.err.println(it);
 //            if (it == 20) {
 //                break;
 //            }
@@ -74,8 +74,8 @@ public class SynchronousBP extends BPAlgorithm {
                         Message message = messages.get(j);
                         if (Utils.distance(message.logMu, new_mu[message.id]) > sensitivity) {
                             updatedLocal = true;
-                            updatesLocal++;
                         }
+                        updatesLocal++;
                         mrf.copyMessage(message, new_mu[message.id]);
                     }
                     updatedThread[id] = updatedLocal;
@@ -124,7 +124,7 @@ public class SynchronousBP extends BPAlgorithm {
 //                mrf.updateMessage(message, new_mu[message.id]);
 //            }
         }
-        System.out.println("Updates: " + updates);
+        System.out.println(String.format("Updates: %d", updates));
         return mrf.getNodeProbabilities();
     }
 }

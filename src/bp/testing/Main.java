@@ -35,6 +35,9 @@ public class Main {
             case "tree":
                 mrf = ExamplesMRF.randomTree(size, 5, 1);
                 break;
+            case "deterministic_tree":
+                mrf = ExamplesMRF.deterministicTree(size);
+                break;
             case "ldpc":
                 mrf = ExamplesMRF.LDPCCodes(size, 3, 6, 0.07, 1);
                 break;
@@ -54,7 +57,15 @@ public class Main {
         double[][] res = algorithm.solve();
         long end = System.currentTimeMillis();
 
-        if (args[1].equals("ldpc")) {
+        if (args[1].equals("deterministic_chain")) {
+            for (int i = 0; i < size; i++) {
+                if (Math.abs(res[i][0] - 0.1) > 0.001) {
+                    System.err.println("Something is wrong");
+                    return;
+                }
+            }
+            System.err.println("Everything is fine");
+        } else if (args[1].equals("ldpc")) {
             int nonZeros = 0;
             for (int i = 0; i < size - 3; i++) {
                 if (res[i][0] < res[i][1]) {

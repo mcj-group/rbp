@@ -5,6 +5,7 @@ import bp.MRF.MRF;
 import bp.MRF.Utils;
 import bp.algorithms.queues.SequentialPQ;
 
+import java.util.Arrays;
 import java.util.Collection;
 
 /**
@@ -50,7 +51,7 @@ public class ResidualBP extends BPAlgorithm {
                 priorityQueue.changePriority(affected, getPriority(affected));
             }
         }
-        System.out.println(String.format("Iterations to convergence: %d", it));
+        System.out.println(String.format("Updates: %d", it));
         return mrf.getNodeProbabilities();
     }
 }

@@ -44,7 +44,7 @@ public class ConcurrentResidualBP extends BPAlgorithm {
             workers[i] = new Thread(() -> {
                 int it = 0;
                 while (true) {
-                    if (++it % 10 == 0) {
+                    if (++it % 1000 == 0) {
                         synchronized (priorityQueue) {
                             if (priorityQueue.peek().priority < sensitivity) {
                                 iterations.addAndGet(it);
@@ -100,7 +100,7 @@ public class ConcurrentResidualBP extends BPAlgorithm {
             }
         }
 
-        System.out.println(String.format("Iterations to convergence: %d", iterations.get()));
+        System.out.println(String.format("Updates: %d", iterations.get()));
 
         return mrf.getNodeProbabilities();
     }

@@ -11,6 +11,7 @@ import bp.algorithms.queues.weighted.WeightedPriorityNode;
 import bp.algorithms.queues.weighted.WeightedSequentialPQ;
 
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -44,6 +45,7 @@ public class SlowWeightDecayBP extends BPAlgorithm {
             priorityQueue.insert(message, priority, priority);
         }
 
+        AtomicInteger iterations = new AtomicInteger();
         Thread[] workers = new Thread[threads];
         for (int i = 0; i < workers.length; i++) {
             workers[i] = new Thread(() -> {
@@ -53,6 +55,7 @@ public class SlowWeightDecayBP extends BPAlgorithm {
 //                        System.err.println(it);
 //                        System.err.println(priorityQueue.peek().getValue());
                         if (priorityQueue.peek().maxWeight < sensitivity) {
+                            iterations.addAndGet(it);
                             return;
                         }
                     }
@@ -112,6 +115,8 @@ public class SlowWeightDecayBP extends BPAlgorithm {
             } catch (InterruptedException e) {
             }
         }
+
+        System.out.println(String.format("Updates: %d", iterations.get()));
 
         return mrf.getNodeProbabilities();
     }
