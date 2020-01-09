@@ -98,7 +98,7 @@ public class WeightDecayBP extends BPAlgorithm {
             }
         }
 
-        System.out.println(String.format("Iterations to convergence: %d", iterations.get()));
+        System.out.println(String.format("Updates: %d", iterations.get()));
 
         return mrf.getNodeProbabilities();
     }

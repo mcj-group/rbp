@@ -12,6 +12,9 @@ public class Utils {
         for (double log : logs) {
             maxLog = Math.max(maxLog, log);
         }
+        if (maxLog == Double.NEGATIVE_INFINITY) {
+            return Double.NEGATIVE_INFINITY;
+        }
         double sumExp = 0;
         for (double x : logs) {
             sumExp += Math.exp(x - maxLog);

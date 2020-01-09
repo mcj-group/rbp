@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.ArrayDeque;
 import java.util.HashSet;
 import java.util.Queue;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -81,10 +82,12 @@ public class SplashBP extends BPAlgorithm {
             pq.insert(v, getPriority(v));
         }
 
+        AtomicInteger updates = new AtomicInteger();
         Thread[] workers = new Thread[threads];
         for (int i = 0; i < workers.length; i++) {
             workers[i] = new Thread(() -> {
                 int it = 0;
+                int updatesLocal = 0;
                 int[] visited = new int[mrf.getNodes()];
                 int[] distance = new int[mrf.getNodes()];
                 ArrayList<Vertex> order = new ArrayList<>(mrf.getNodes());
@@ -93,6 +96,7 @@ public class SplashBP extends BPAlgorithm {
                 while (true) {
                     if (++it % 1000 == 0) {
                         if (pq.peek().priority < sensitivity) {
+                            updates.addAndGet(updatesLocal);
                             return;
                         }
                     }
@@ -126,6 +130,7 @@ public class SplashBP extends BPAlgorithm {
                         affected.add(u.v);
                         for (Message m : mrf.getMessagesFrom(u.v)) {
                             updateMessage(locks, m);
+                            updatesLocal++;
                             affected.add(m.j);
                         }
                     }
@@ -134,6 +139,7 @@ public class SplashBP extends BPAlgorithm {
                         affected.add(u.v);
                         for (Message m : mrf.getMessagesFrom(u.v)) {
                             updateMessage(locks, m);
+                            updatesLocal++;
                             affected.add(m.j);
                         }
                     }
@@ -172,6 +178,8 @@ public class SplashBP extends BPAlgorithm {
             } catch (InterruptedException e) {
             }
         }
+
+        System.out.println(String.format("Updates: %d", updates.get()));
 
         return mrf.getNodeProbabilities();
     }
