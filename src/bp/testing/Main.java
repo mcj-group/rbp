@@ -57,7 +57,7 @@ public class Main {
         double[][] res = algorithm.solve();
         long end = System.currentTimeMillis();
 
-        if (args[1].equals("deterministic_chain")) {
+        if (args[1].equals("deterministic_chain") || args[1].equals("deterministic_tree")) {
             for (int i = 0; i < size; i++) {
                 if (Math.abs(res[i][0] - 0.1) > 0.001) {
                     System.err.println("Something is wrong");

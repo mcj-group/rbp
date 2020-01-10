@@ -111,7 +111,7 @@ public class SplashBP extends BPAlgorithm {
                     queue.add(v.v);
                     while (!queue.isEmpty()) {
                         int u = queue.poll();
-                        if (visited[u] == it && distance[u] >= splashH + 1) {
+                        if (visited[u] == it && distance[u] >= splashH + 2) {
                             break;
                         }
                         for (Message m : mrf.getMessagesFrom(u)) {

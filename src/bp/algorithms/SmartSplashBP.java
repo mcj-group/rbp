@@ -110,7 +110,7 @@ public class SmartSplashBP extends BPAlgorithm {
                     queue.add(v.v);
                     while (!queue.isEmpty()) {
                         int u = queue.poll();
-                        if (visited[u] == it && distance[u] >= splashH) {
+                        if (visited[u] == it && distance[u] >= splashH + 1) {
                             break;
                         }
                         for (Message m : mrf.getMessagesFrom(u)) {
@@ -120,7 +120,9 @@ public class SmartSplashBP extends BPAlgorithm {
                             visited[m.j] = it;
                             distance[m.j] = distance[u] + 1;
                             queue.add(m.j);
-                            order.add(m);
+                            if (distance[m.j] <= splashH) {
+                                order.add(m);
+                            }
                             affected.add(m.j);
                         }
                     }
