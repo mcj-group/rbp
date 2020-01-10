@@ -92,7 +92,7 @@ public class SplashBP extends BPAlgorithm {
                 int[] distance = new int[mrf.getNodes()];
                 ArrayList<Vertex> order = new ArrayList<>(mrf.getNodes());
                 Queue<Integer> queue = new ArrayDeque<>(mrf.getNodes());
-                HashSet<Integer> affected = new HashSet<>();
+                ArrayList<Integer> affected = new ArrayList<>();
                 while (true) {
                     if (++it % 1000 == 0) {
                         if (pq.peek().priority < sensitivity) {
@@ -105,12 +105,13 @@ public class SplashBP extends BPAlgorithm {
 
                     order.clear();
                     queue.clear();
+                    affected.clear();
                     visited[v.v] = it;
                     distance[v.v] = 0;
                     queue.add(v.v);
                     while (!queue.isEmpty()) {
                         int u = queue.poll();
-                        if (visited[u] == it && distance[u] >= splashH) {
+                        if (visited[u] == it && distance[u] >= splashH + 1) {
                             break;
                         }
                         for (Message m : mrf.getMessagesFrom(u)) {
@@ -120,27 +121,25 @@ public class SplashBP extends BPAlgorithm {
                             visited[m.j] = it;
                             distance[m.j] = distance[u] + 1;
                             queue.add(m.j);
-                            order.add(vertices[m.j]);
+                            if (distance[m.j] <= splashH) {
+                                order.add(vertices[m.j]);
+                            }
+                            affected.add(m.j);
                         }
                     }
 
-                    affected.clear();
                     for (int j = 0; j < order.size(); j++) {
                         Vertex u = order.get(order.size() - j - 1);
-                        affected.add(u.v);
                         for (Message m : mrf.getMessagesFrom(u.v)) {
                             updateMessage(locks, m);
                             updatesLocal++;
-                            affected.add(m.j);
                         }
                     }
 
                     for (Vertex u : order) {
-                        affected.add(u.v);
                         for (Message m : mrf.getMessagesFrom(u.v)) {
                             updateMessage(locks, m);
                             updatesLocal++;
-                            affected.add(m.j);
                         }
                     }
 
