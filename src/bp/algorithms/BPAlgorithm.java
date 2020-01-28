@@ -20,6 +20,8 @@ public abstract class BPAlgorithm {
                 return new ResidualBP(mrf, sensitivity);
             case "synchronous":
                 return new SynchronousBP(mrf, threads, sensitivity);
+            case "random-synchronous":
+                return new RandomSynchronousBP(mrf, threads, sensitivity, Double.parseDouble(args[0]));
             case "concurrent-unfair":
                 return new ConcurrentResidualBP(mrf, threads, false, sensitivity);
             case "concurrent-fair":
