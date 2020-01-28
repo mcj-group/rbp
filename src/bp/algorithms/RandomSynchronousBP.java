@@ -40,15 +40,66 @@ public class RandomSynchronousBP extends BPAlgorithm {
         return result;
     }
 
+    public interface Iteration {
+        public void apply(int i);
+    }
+
+    public void parallelFor(int n, Iteration it) {
+        Thread[] threads = new Thread[this.threads];
+        final int len = (n + this.threads - 1) / this.threads;
+        for (int i = 0; i < this.threads; i++) {
+            int id = i;
+            threads[i] = new Thread(() -> {
+                for (int j = len * id; j < Math.min(len * (id + 1), n); j++) {
+                    it.apply(j);
+                }
+            });
+            threads[i].start();
+        }
+        for (int i = 0; i < this.threads; i++) {
+            try {
+                threads[i].join();
+            } catch (InterruptedException e) {
+            }
+        }
+    }
+
     public <T> T[] filter(Class<T> clazz, T[] a, Predicate<? super T> predicate) {
         int[] flags = new int[a.length + 1];
-        IntStream.range(0, a.length).forEach(i -> flags[i + 1] = predicate.test(a[i]) ? 1 : 0);
-        Arrays.parallelPrefix(flags, (x, y) -> x + y);
+        long start = System.currentTimeMillis();
+//        IntStream.range(0, a.length).parallel().forEach(i -> flags[i + 1] = predicate.test(a[i]) ? 1 : 0);
+        parallelFor(a.length, (int j) -> { flags[j] = predicate.test(a[j]) ? 1 : 0; });
+        System.err.println("Predicate: " + (System.currentTimeMillis() - start));
+        start = System.currentTimeMillis();
+//        Arrays.parallelPrefix(flags, (x, y) -> x + y);
+        for (int i = 1; i < flags.length; i++) {
+            flags[i] += flags[i - 1];
+        }
+        System.err.println("Parallel prefix: " + (System.currentTimeMillis() - start));
         T[] result = (T[]) Array.newInstance(clazz, flags[flags.length - 1]);
-        IntStream.range(0, a.length).forEach(i -> {
-            if (flags[i] != flags[i + 1]) result[flags[i]] = a[i];
-        });
+        start = System.currentTimeMillis();
+//        IntStream.range(0, a.length).parallel().forEach(i -> {
+//            if (flags[i] != flags[i + 1]) result[flags[i]] = a[i];
+//        });
+        parallelFor(a.length, (int i) -> { if (flags[i] != flags[i + 1]) result[flags[i]] = a[i]; });
+//        for (int i = 0; i < a.length; i++) {
+//            if (flags[i] != flags[i + 1]) {
+//                result[flags[i]] = a[i];
+//            }
+//        }
+        System.err.println("Copy: " + (System.currentTimeMillis() - start));
         return result;
+    }
+
+    public <T> T[] filterSeq(Class<T> clazz, T[] a, Predicate<? super T> predicate) {
+        T[] results = (T[]) Array.newInstance(clazz, a.length);
+        int l = 0;
+        for (int i = 0; i < a.length; i++) {
+            if (predicate.test(a[i])) {
+                results[l++] = a[i];
+            }
+        } 
+        return Arrays.copyOf(results, l);
     }
 
     public double[][] solve() {
@@ -57,6 +108,7 @@ public class RandomSynchronousBP extends BPAlgorithm {
             locks[i] = new ReentrantLock();
         }
 
+        Thread[] threads = new Thread[this.threads];
         final Message[] messages = mrf.getMessages().toArray(new Message[0]);
         double[][] new_mu = new double[messages.length][];
 
@@ -72,34 +124,31 @@ public class RandomSynchronousBP extends BPAlgorithm {
                 System.err.println(String.format("Current error: %f", totalError(messages)));
             }
 
-            Thread[] threads = new Thread[this.threads];
-            final int len = (messages.length + this.threads - 1) / this.threads;
-            for (int i = 0; i < this.threads; i++) {
-                int id = i;
-                threads[i] = new Thread(() -> {
-                    for (int j = len * id; j < Math.min(len * (id + 1), messages.length); j++) {
-                        Message message = messages[j];
-                        new_mu[message.id] = mrf.getFutureMessage(message);
-                    }
-                });
-                threads[i].start();
-            }
-            for (int i = 0; i < this.threads; i++) {
-                try {
-                    threads[i].join();
-                } catch (InterruptedException e) {
-                }
-            }
+            long start = System.currentTimeMillis();
+            parallelFor(messages.length, (int j) -> {
+                Message message = messages[j];
+                new_mu[message.id] = mrf.getFutureMessage(message);
+            });
+            System.err.println(System.currentTimeMillis() - start);
 
+        int[] flags = new int[messages.length + 1];
+        start = System.currentTimeMillis();
+//        IntStream.range(0, a.length).parallel().forEach(i -> flags[i + 1] = predicate.test(a[i]) ? 1 : 0);
+        parallelFor(messages.length, (int j) -> { flags[j] = Utils.distance(messages[j].logMu, new_mu[messages[j].id]) > sensitivity ? 1 : 0; });
+        System.err.println("Predicate FUCK: " + (System.currentTimeMillis() - start));
+
+            start = System.currentTimeMillis();
             Message[] reasonableMessages = new Message[0];
-            try {
-//            reasonableMessages = this.filter(Message.class, messages, m -> Utils.distance(m.logMu, new_mu[m.id]) > sensitivity);
+            reasonableMessages = this.filter(Message.class, messages, m -> Utils.distance(m.logMu, new_mu[m.id]) > sensitivity);
+/*            try {
                 reasonableMessages = forkJoinPool.submit(() ->
                         this.filter(Message.class, messages, m -> Utils.distance(m.logMu, new_mu[m.id]) > sensitivity)
                 ).get();
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
-            }
+            }*/
+            System.err.println("Filter " + (System.currentTimeMillis() - start));
+
 //            for (Message m : reasonableMessages) {
 //                if (Utils.distance(m.logMu, new_mu[m.id]) < sensitivity) {
 //                    throw new AssertionError();
@@ -165,9 +214,11 @@ public class RandomSynchronousBP extends BPAlgorithm {
                     e.printStackTrace();
                 }
             }
+            System.err.println(reasonableMessages.length);
 
             final int len2 = (reasonableMessages.length + this.threads - 1) / this.threads;
 
+            start = System.currentTimeMillis();
             final int[] updatesThread = new int[this.threads];
             for (int i = 0; i < this.threads; i++) {
                 int id = i;
@@ -176,10 +227,10 @@ public class RandomSynchronousBP extends BPAlgorithm {
                     int updatesLocal = 0;
                     for (int j = len2 * id; j < Math.min(len2 * (id + 1), finalReasonableMessages.length); j++) {
                         Message message = finalReasonableMessages[j];
-//                        locks[message.j].lock();
-//                        mrf.updateMessage(message, new_mu[message.id]);
-//                        locks[message.j].unlock();
-                        mrf.copyMessage(message, new_mu[message.id]);
+                        locks[message.j].lock();
+                        mrf.updateMessage(message, new_mu[message.id]);
+                        locks[message.j].unlock();
+//                        mrf.copyMessage(message, new_mu[message.id]);
                         updatesLocal++;
                     }
                     updatesThread[id] = updatesLocal;
@@ -194,8 +245,14 @@ public class RandomSynchronousBP extends BPAlgorithm {
                 } catch (InterruptedException e) {
                 }
             }
+            System.err.println("Copy message: " + (System.currentTimeMillis() - start));
 
-            int lenNodes = (mrf.getNodes() + this.threads - 1) / this.threads;
+/*            start = System.currentTimeMillis();
+            parallelFor(mrf.getNodes(), (int j) -> {
+                mrf.updateNodeSum(j);
+            });
+            System.err.println("Update nodes: " + (System.currentTimeMillis() - start));*/
+/*            int lenNodes = (mrf.getNodes() + this.threads - 1) / this.threads;
             for (int i = 0; i < this.threads; i++) {
                 int id = i;
                 threads[i] = new Thread(() -> {
@@ -211,9 +268,10 @@ public class RandomSynchronousBP extends BPAlgorithm {
                     threads[i].join();
                 } catch (InterruptedException e) {
                 }
-            }
+            }*/
 
 //                          }
+            System.exit(0);
 
             oldMessages = newMessages;
         }
