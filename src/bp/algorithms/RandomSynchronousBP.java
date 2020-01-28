@@ -95,7 +95,7 @@ public class RandomSynchronousBP extends BPAlgorithm {
             try {
 //            reasonableMessages = this.filter(Message.class, messages, m -> Utils.distance(m.logMu, new_mu[m.id]) > sensitivity);
                 reasonableMessages = forkJoinPool.submit(() ->
-                    this.filter(Message.class, messages, m -> Utils.distance(m.logMu, new_mu[m.id]) > sensitivity)
+                        this.filter(Message.class, messages, m -> Utils.distance(m.logMu, new_mu[m.id]) > sensitivity)
                 ).get();
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
@@ -176,9 +176,10 @@ public class RandomSynchronousBP extends BPAlgorithm {
                     int updatesLocal = 0;
                     for (int j = len2 * id; j < Math.min(len2 * (id + 1), finalReasonableMessages.length); j++) {
                         Message message = finalReasonableMessages[j];
-                        locks[message.j].lock();
-                        mrf.updateMessage(message, new_mu[message.id]);
-                        locks[message.j].unlock();
+//                        locks[message.j].lock();
+//                        mrf.updateMessage(message, new_mu[message.id]);
+//                        locks[message.j].unlock();
+                        mrf.copyMessage(message, new_mu[message.id]);
                         updatesLocal++;
                     }
                     updatesThread[id] = updatesLocal;
@@ -193,6 +194,25 @@ public class RandomSynchronousBP extends BPAlgorithm {
                 } catch (InterruptedException e) {
                 }
             }
+
+            int lenNodes = (mrf.getNodes() + this.threads - 1) / this.threads;
+            for (int i = 0; i < this.threads; i++) {
+                int id = i;
+                threads[i] = new Thread(() -> {
+                    for (int j = lenNodes * id; j < Math.min(lenNodes * (id + 1), mrf.getNodes()); j++) {
+                        mrf.updateNodeSum(j);
+                    }
+                });
+                threads[i].start();
+            }
+
+            for (int i = 0; i < this.threads; i++) {
+                try {
+                    threads[i].join();
+                } catch (InterruptedException e) {
+                }
+            }
+
 //                          }
 
             oldMessages = newMessages;
