@@ -65,10 +65,11 @@ public class RandomSynchronousBP extends BPAlgorithm {
     }
 
     public <T> T[] filter(Class<T> clazz, T[] a, Predicate<? super T> predicate) {
+        System.err.println("Array a " + Arrays.toString(a));
         int[] flags = new int[a.length + 1];
         long start = System.currentTimeMillis();
 //        IntStream.range(0, a.length).parallel().forEach(i -> flags[i + 1] = predicate.test(a[i]) ? 1 : 0);
-        parallelFor(a.length, (int j) -> { flags[j] = predicate.test(a[j]) ? 1 : 0; });
+        parallelFor(a.length, (int j) -> { flags[j + 1] = predicate.test(a[j]) ? 1 : 0; });
         System.err.println("Predicate: " + (System.currentTimeMillis() - start));
         start = System.currentTimeMillis();
 //        Arrays.parallelPrefix(flags, (x, y) -> x + y);
@@ -87,6 +88,7 @@ public class RandomSynchronousBP extends BPAlgorithm {
 //                result[flags[i]] = a[i];
 //            }
 //        }
+        System.err.println(result[result.length - 1]);
         System.err.println("Copy: " + (System.currentTimeMillis() - start));
         return result;
     }
@@ -148,6 +150,7 @@ public class RandomSynchronousBP extends BPAlgorithm {
                 e.printStackTrace();
             }*/
             System.err.println("Filter " + (System.currentTimeMillis() - start));
+            System.err.println("First filter " + Arrays.toString(reasonableMessages));
 
 //            for (Message m : reasonableMessages) {
 //                if (Utils.distance(m.logMu, new_mu[m.id]) < sensitivity) {
@@ -227,6 +230,8 @@ public class RandomSynchronousBP extends BPAlgorithm {
                     int updatesLocal = 0;
                     for (int j = len2 * id; j < Math.min(len2 * (id + 1), finalReasonableMessages.length); j++) {
                         Message message = finalReasonableMessages[j];
+                        if (message == null)
+                            throw new AssertionError();
                         locks[message.j].lock();
                         mrf.updateMessage(message, new_mu[message.id]);
                         locks[message.j].unlock();
