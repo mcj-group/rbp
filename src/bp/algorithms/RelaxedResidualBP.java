@@ -4,6 +4,7 @@ import bp.MRF.Message;
 import bp.MRF.MRF;
 import bp.MRF.Utils;
 import bp.algorithms.queues.MultiPQ;
+import bp.algorithms.queues.RandomPQ;
 
 import java.util.Collection;
 import java.util.concurrent.locks.ReentrantLock;
@@ -15,13 +16,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class RelaxedResidualBP extends BPAlgorithm {
     int threads;
     boolean fair;
+    boolean multiQueue;
     double sensitivity;
+    volatile boolean finished;
 
-    public RelaxedResidualBP(MRF mrf, int threads, boolean fair, double sensitivity) {
+    public RelaxedResidualBP(MRF mrf, int threads, boolean fair, boolean multiQueue, double sensitivity) {
         super(mrf);
         this.threads = threads;
         this.sensitivity = sensitivity;
         this.fair = fair;
+        this.multiQueue = multiQueue;
     }
 
     private double getPriority(Message e) {
@@ -34,25 +38,30 @@ public class RelaxedResidualBP extends BPAlgorithm {
             locks[i] = new ReentrantLock();
         }
         Collection<Message> messages = mrf.getMessages();
-        final MultiPQ<Message> priorityQueue = new MultiPQ<>(messages.size(), 4 * threads);
+        final MultiPQ<Message> priorityQueue =
+                multiQueue ? new MultiPQ<>(messages.size(), 4 * threads) :
+                    new RandomPQ<>(messages.size(), threads);
         for (Message message : messages) {
             priorityQueue.insert(message, getPriority(message));
         }
         Thread[] workers = new Thread[threads];
         AtomicInteger iterations = new AtomicInteger();
         for (int i = 0; i < workers.length; i++) {
+            final int pid = i;
             workers[i] = new Thread(() -> {
                 int it = 0;
                 while (true) {
                     if (++it % 1000 == 0) {
 //                        System.err.println(it);
-//                        System.err.println(priorityQueue.peek().getValue());
-                        if (priorityQueue.peek().priority < sensitivity) {
+//                        System.err.println(priorityQueue.peek().priority);
+                        if (priorityQueue.peek().priority < sensitivity ||
+                                (finished && !multiQueue)) {
                             iterations.addAndGet(it);
+                            finished = true;
                             return;
                         }
                     }
-                    Message m = priorityQueue.extractMin();
+                    Message m = priorityQueue.extractMin(pid);
 
                     int mi = Math.min(m.i, m.j);
                     int mj = Math.max(m.i, m.j);
@@ -65,11 +74,11 @@ public class RelaxedResidualBP extends BPAlgorithm {
                     Collection<Message> messagesFromJ = mrf.getMessagesFrom(m.j);
                     for (Message affected : messagesFromJ) {
                         if (affected.j != m.i) {
-                            priorityQueue.changePriority(affected, getPriority(affected));
+                            priorityQueue.changePriority(pid, affected, getPriority(affected));
                         }
                     }
 
-                    priorityQueue.insert(m, 0);
+                    priorityQueue.insert(pid, m, 0);
                     if (fair) {
                         locks[mj].unlock();
                         locks[mi].unlock();

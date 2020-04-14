@@ -20,7 +20,9 @@ public class SmartSplashBP extends BPAlgorithm {
     int threads;
     boolean fair;
     boolean relaxed;
+    boolean multiQueue;
     double sensitivity;
+    volatile boolean finished;
 
     public class Vertex extends IdentifiedClass {
         int v;
@@ -35,12 +37,14 @@ public class SmartSplashBP extends BPAlgorithm {
         }
     }
 
-    public SmartSplashBP(MRF mrf, int splashH, int threads, boolean fair, boolean relaxed, double sensitivity) {
+    public SmartSplashBP(MRF mrf, int splashH, int threads, boolean fair, boolean relaxed, boolean multiQueue,
+                         double sensitivity) {
         super(mrf);
         this.splashH = splashH;
         this.threads = threads;
         this.fair = fair;
         this.relaxed = relaxed;
+        this.multiQueue = multiQueue;
         this.sensitivity = sensitivity;
     }
 
@@ -73,7 +77,8 @@ public class SmartSplashBP extends BPAlgorithm {
         }
 
         final PQ<Vertex> pq = relaxed ?
-                new MultiPQ<>(mrf.getNodes(), 4 * threads) :
+                (multiQueue ? new MultiPQ<>(mrf.getNodes(), 4 * threads) :
+                        new RandomPQ<>(mrf.getNodes(), threads)) :
                 new ConcurrentPQ<>(mrf.getNodes());
         Vertex[] vertices = new Vertex[mrf.getNodes()];
         for (int i = 0; i < mrf.getNodes(); i++) {
@@ -85,6 +90,7 @@ public class SmartSplashBP extends BPAlgorithm {
         AtomicInteger updates = new AtomicInteger();
         Thread[] workers = new Thread[threads];
         for (int i = 0; i < workers.length; i++) {
+            final int pid = i;
             workers[i] = new Thread(() -> {
                 int it = 0;
                 int updatesLocal = 0;
@@ -95,13 +101,15 @@ public class SmartSplashBP extends BPAlgorithm {
                 ArrayList<Integer> affected = new ArrayList<>();
                 while (true) {
                     if (++it % 1000 == 0) {
-                        if (pq.peek().priority < sensitivity) {
+                        if (pq.peek().priority < sensitivity ||
+                                (relaxed && !multiQueue && finished)) {
                             updates.addAndGet(updatesLocal);
+                            finished = true;
                             return;
                         }
                     }
 
-                    Vertex v = pq.extractMin();
+                    Vertex v = pq.extractMin(pid);
                     order.clear();
                     queue.clear();
                     affected.clear();
@@ -145,7 +153,7 @@ public class SmartSplashBP extends BPAlgorithm {
                         if (fair) {
                             locks[u].lock();
                         }
-                        pq.changePriority(vertices[u], getPriority(vertices[u]), 1e-7);
+                        pq.changePriority(pid, vertices[u], getPriority(vertices[u]), 1e-7);
                         if (fair) {
                             locks[u].unlock();
                         }
@@ -153,7 +161,7 @@ public class SmartSplashBP extends BPAlgorithm {
                     if (fair) {
                         locks[v.v].lock();
                     }
-                    pq.insert(v, getPriority(v));
+                    pq.insert(pid, v, getPriority(v));
                     if (fair) {
                         locks[v.v].unlock();
                     }
