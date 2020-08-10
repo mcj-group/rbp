@@ -24,6 +24,8 @@ public abstract class BPAlgorithm {
                 return new RandomSynchronousBP(mrf, threads, sensitivity, Double.parseDouble(args[0]));
             case "bucket-residual":
                 return new BucketResidualBP(mrf, threads, sensitivity, Double.parseDouble(args[0]));
+            case "bucket-residual-2":
+                return new BucketResidual2BP(mrf, threads, sensitivity, Double.parseDouble(args[0]));
             case "concurrent-unfair":
                 return new ConcurrentResidualBP(mrf, threads, false, sensitivity);
             case "concurrent-fair":
