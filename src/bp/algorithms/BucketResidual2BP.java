@@ -5,6 +5,7 @@ import bp.MRF.Message;
 import bp.MRF.Utils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Random;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -188,6 +189,12 @@ public class BucketResidual2BP extends BPAlgorithm {
         int updates = 0;
         int[] updatesThread = new int[this.threads];
 
+        Random rnd = new Random(239);
+        ArrayList<Integer> random = new ArrayList<>();
+        for (int i = 0; i < mrf.getNodes(); i++) {
+            random.add(i);
+        }
+
         while (true) {
             parallelFor(vertices.length, (int l, int r, int tid) -> {
                 double p = 0;
@@ -208,9 +215,12 @@ public class BucketResidual2BP extends BPAlgorithm {
 
             topK(order, orderK);
 
+            Collections.shuffle(random, rnd);
+
             parallelFor(orderK, (int l, int r, int tid) -> {
                 int updatesLocal = 0;
-                for (int j = l; j < r; j++) {
+                for (int k = l; k < r; k++) {
+                    int j = random.get(k);
                     for (Message m : mrf.getMessagesTo(order[j].v)) {
                         int mi = Math.min(m.i, m.j);
                         int mj = Math.max(m.i, m.j);
