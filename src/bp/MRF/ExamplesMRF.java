@@ -23,7 +23,7 @@ public class ExamplesMRF {
             double beta = (rnd.nextDouble() - 0.5) * C;
             for (int j = 0; j < 2; j++) {
                 int v = 2 * j - 1;
-                potential[j] = rnd.nextDouble();//Math.exp(beta * v);
+                potential[j] = Math.exp(beta * v);
             }
             mrf.setNodePotential(i, potential);
         }

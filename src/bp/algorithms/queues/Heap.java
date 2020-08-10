@@ -77,10 +77,14 @@ public class Heap<K> {
         size--;
         siftDown(heap[1]);
         peek.copyFrom(heap[1]);
+        res.pos = -1;
         return res;
     }
 
     public void changePriority(PriorityNode<K> node, double priority) {
+        if (node.pos == -1) {
+            return;
+        }
         node.priority = priority;
         siftUp(node);
         siftDown(node);
@@ -105,6 +109,6 @@ public class Heap<K> {
     }
 
     public String toString() {
-        return Arrays.toString(heap);
+        return size + " " + Arrays.toString(Arrays.copyOf(heap, size + 1));
     }
 }

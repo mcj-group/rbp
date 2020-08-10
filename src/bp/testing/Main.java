@@ -46,12 +46,16 @@ public class Main {
                 break;
             default:
                 throw new AssertionError(String.format("MRF %s is not supported", args[1]));
-        }
-
+        }                       
+                                
+        System.out.println("The model has been set up");
+                                
         double sensitivity = 1e-5;
-
+                                
         BPAlgorithm algorithm = BPAlgorithm.getAlgorithm(args[0], mrf, sensitivity,
                 threads, (String[]) Arrays.copyOfRange(args, 4, args.length));
+
+        System.out.println("The algorithm is set up");
 
         long start = System.currentTimeMillis();
         double[][] res = algorithm.solve();
@@ -60,7 +64,7 @@ public class Main {
         if (args[1].equals("deterministic_chain") || args[1].equals("deterministic_tree")) {
             for (int i = 0; i < size; i++) {
                 if (Math.abs(res[i][0] - 0.1) > 0.001) {
-                    System.err.println("Something is wrong");
+                    System.err.println("Something is wrong with vertex " + i);
                     return;
                 }
             }

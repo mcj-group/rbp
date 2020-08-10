@@ -7,6 +7,7 @@ import bp.algorithms.queues.*;
 
 import java.util.ArrayList;
 import java.util.ArrayDeque;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -99,6 +100,7 @@ public class SmartSplashBP extends BPAlgorithm {
                 ArrayList<Message> order = new ArrayList<>(mrf.getNodes());
                 Queue<Integer> queue = new ArrayDeque<>(mrf.getNodes());
                 ArrayList<Integer> affected = new ArrayList<>();
+                ArrayList<Integer> verticesToLock = new ArrayList<>();
                 while (true) {
                     if (++it % 1000 == 0) {
                         if (pq.peek().priority < sensitivity ||
@@ -151,18 +153,44 @@ public class SmartSplashBP extends BPAlgorithm {
                             continue;
                         }
                         if (fair) {
+//                            verticesToLock.clear();
+//                            verticesToLock.add(u);
+//                            for (Message in : mrf.getMessagesTo(u)) {
+//                                verticesToLock.add(in.i);
+//                            }
+//                            Collections.sort(verticesToLock);
+//
+//                            for (int x : verticesToLock) {
+//                                locks[x].lock();
+//                            }
                             locks[u].lock();
                         }
                         pq.changePriority(pid, vertices[u], getPriority(vertices[u]), 1e-7);
                         if (fair) {
+//                            for (int x : verticesToLock) {
+//                                locks[x].unlock();
+//                            }
                             locks[u].unlock();
                         }
                     }
                     if (fair) {
+//                        verticesToLock.clear();
+//                        verticesToLock.add(v.v);
+//                        for (Message in : mrf.getMessagesTo(v.v)) {
+//                            verticesToLock.add(in.i);
+//                        }
+//                        Collections.sort(verticesToLock);
+//
+//                        for (int x : verticesToLock) {
+//                            locks[x].lock();
+//                        }
                         locks[v.v].lock();
                     }
                     pq.insert(pid, v, getPriority(v));
                     if (fair) {
+//                        for (int x : verticesToLock) {
+//                            locks[x].unlock();
+//                        }
                         locks[v.v].unlock();
                     }
                 }
