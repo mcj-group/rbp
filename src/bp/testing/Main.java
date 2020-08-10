@@ -96,23 +96,19 @@ public class Main {
         }*/
         System.out.println(String.format("Execution time: %d", end - start));
 
-        if (args[args.length - 1].equals("accuracy")) {
-            String dir = "out/residual/";
-            String filename = args[1] + "-" + args[2];
+        String dir = "out/residual/";
+        String filename = args[1] + "-" + args[2];
 
-            double[][] jury = new double[res.length][res[0].length];
+        if (args[0].equals("residual")) {
             if (!new File(dir).exists()) {
                 new File(dir).mkdirs();
             }
             if (!new File(dir + "/" + filename).exists()) {
-                System.err.println("Run residual");
-                algorithm = BPAlgorithm.getAlgorithm("residual", mrf, sensitivity, threads);
-                jury = algorithm.solve();
                 try {
                     PrintWriter out = new PrintWriter(dir + "/" + filename);
-                    for (int i = 0; i < jury.length; i++) {
-                        for (int j = 0; j < jury[i].length; j++) {
-                            out.print((j == 0 ? "" : " ") + jury[i][j]);
+                    for (int i = 0; i < res.length; i++) {
+                        for (int j = 0; j < res[i].length; j++) {
+                            out.print((j == 0 ? "" : " ") + res[i][j]);
                         }
                         out.println();
                     }
@@ -120,30 +116,31 @@ public class Main {
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }
-            } else {
-                try {
-                    BufferedReader br = new BufferedReader(new FileReader(dir + "/" + filename));
-                    for (int i = 0; i < jury.length; i++) {
-                        String[] a = br.readLine().split(" ");
-                        for (int j = 0; j < jury[i].length; j++) {
-                            jury[i][j] = Double.parseDouble(a[j]);
-                        }
+            }
+        } else {
+            double[][] jury = new double[res.length][res[0].length];
+            try {
+                BufferedReader br = new BufferedReader(new FileReader(dir + "/" + filename));
+                for (int i = 0; i < jury.length; i++) {
+                    String[] a = br.readLine().split(" ");
+                    for (int j = 0; j < jury[i].length; j++) {
+                        jury[i][j] = Double.parseDouble(a[j]);
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
-            }
 
-            double accuracy = 0;
-            for (int i = 0; i < res.length; i++) {
-                double L1 = 0;
-                for (int j = 0; j < res[i].length; j++) {
-                    L1 += Math.abs(jury[i][j] - res[i][j]);
+                double accuracy = 0;
+                for (int i = 0; i < res.length; i++) {
+                    double L1 = 0;
+                    for (int j = 0; j < res[i].length; j++) {
+                        L1 += Math.abs(jury[i][j] - res[i][j]);
+                    }
+                    accuracy += L1;
                 }
-                accuracy += L1;
+                Locale.setDefault(Locale.US);
+                System.out.println(String.format("Accuracy: %f", accuracy / res.length));
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-            Locale.setDefault(Locale.US);
-            System.out.println(String.format("Accuracy: %f", accuracy / res.length));
         }
     }
 }
