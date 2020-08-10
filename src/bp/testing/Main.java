@@ -98,7 +98,7 @@ public class Main {
 
         if (args[args.length - 1].equals("accuracy")) {
             String dir = "out/residual/";
-            String filename = "";
+            String filename = args[1] + "-" + args[2];
             for (int i = 1; i < args.length; i++) {
                 if (filename.length() != 0)
                     filename += "-";
