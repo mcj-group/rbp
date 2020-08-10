@@ -226,7 +226,7 @@ public class BucketResidual2BP extends BPAlgorithm {
                         int mj = Math.max(m.i, m.j);
                         locks[mi].lock();
                         locks[mj].lock();
-                        mrf.updateMessage(m, new_mu[m.id]);
+                        mrf.updateMessage(m);
                         locks[mi].unlock();
                         locks[mj].unlock();
                         updatesLocal++;
