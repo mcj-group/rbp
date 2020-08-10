@@ -4,8 +4,6 @@ import bp.MRF.ExamplesMRF;
 import bp.MRF.MRF;
 import bp.algorithms.*;
 
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
 import java.util.Arrays;
 
 /**
