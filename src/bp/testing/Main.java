@@ -99,11 +99,6 @@ public class Main {
         if (args[args.length - 1].equals("accuracy")) {
             String dir = "out/residual/";
             String filename = args[1] + "-" + args[2];
-            for (int i = 1; i < args.length; i++) {
-                if (filename.length() != 0)
-                    filename += "-";
-                filename += args[i];
-            }
 
             double[][] jury = new double[res.length][res[0].length];
             if (!new File(dir).exists()) {
