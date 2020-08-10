@@ -5,6 +5,7 @@ import bp.MRF.Message;
 import bp.MRF.Utils;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  * Created by vaksenov on 09.08.2020.
@@ -13,7 +14,8 @@ public class BucketResidualBP extends BPAlgorithm {
     double sensitivity;
     int threads;
     double pV;
-    boolean CHECK = false   ;
+    boolean CHECK = false;
+    Random rnd = new Random(239);
 
     public BucketResidualBP(MRF mrf, int threads, double sensitivity, double pV) {
         super(mrf);
@@ -132,7 +134,7 @@ public class BucketResidualBP extends BPAlgorithm {
                 return;
             }
 
-            int mid = (l + r) >> 1;
+            int mid = l + rnd.nextInt(r - l); //(l + r) >> 1;
             swapOrder(l, mid);
             Vertex curr = order[l];
             int i = l;
