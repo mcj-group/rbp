@@ -118,10 +118,11 @@ public class Main {
                 }
             }
         } else {
-            double[][] jury = new double[res.length][res[0].length];
+            double[][] jury = new double[res.length][];
             try {
                 BufferedReader br = new BufferedReader(new FileReader(dir + "/" + filename));
                 for (int i = 0; i < jury.length; i++) {
+                    jury[i] = new double[res[i].length];
                     String[] a = br.readLine().split(" ");
                     for (int j = 0; j < jury[i].length; j++) {
                         jury[i][j] = Double.parseDouble(a[j]);
