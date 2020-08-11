@@ -130,15 +130,18 @@ public class Main {
                 }
 
                 double accuracy = 0;
+                double accuracyMax = 0;
                 for (int i = 0; i < res.length; i++) {
                     double L1 = 0;
                     for (int j = 0; j < res[i].length; j++) {
                         L1 += Math.abs(jury[i][j] - res[i][j]);
                     }
                     accuracy += L1;
+                    accuracyMax = Math.max(accuracyMax, L1);
                 }
                 Locale.setDefault(Locale.US);
                 System.out.println(String.format("Accuracy: %f", accuracy / res.length));
+                System.out.println(String.format("Accuracy Max: %f", accuracyMax));
             } catch (IOException e) {
                 e.printStackTrace();
             }
