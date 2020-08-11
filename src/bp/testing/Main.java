@@ -141,7 +141,7 @@ public class Main {
                 }
                 Locale.setDefault(Locale.US);
                 System.out.println(String.format("Accuracy: %f", accuracy / res.length));
-                System.out.println(String.format("Accuracy Max: %f", accuracyMax));
+                System.out.println(String.format("AccuracyMax: %f", accuracyMax));
             } catch (IOException e) {
                 e.printStackTrace();
             }
