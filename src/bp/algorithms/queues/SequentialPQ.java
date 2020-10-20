@@ -31,11 +31,24 @@ public class SequentialPQ<K extends IdentifiedClass> implements PQ<K> {
         return heap.extractMin().value;
     }
 
+    public PriorityNode<K> extractNode() {
+        return heap.extractMin();
+    }
+
     public PriorityNode<K> peek() {
         return heap.peek();
     }
 
     public boolean check() {
+        boolean[] have = new boolean[heap.heap.length + 1];
+        for (int i = 1; i <= heap.size; i++) {
+            int id = heap.heap[i].value.id;
+            if (have[id]) {
+                return false;
+            }
+            have[id] = true;
+        }
+
         return heap.check();
     }
 

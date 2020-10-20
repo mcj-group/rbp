@@ -27,15 +27,19 @@ public class ConcurrentPQ<K extends IdentifiedClass> extends SequentialPQ<K> {
         return super.extractMin();
     }
 
+    public synchronized PriorityNode<K> extractNode() {
+        return super.extractNode();
+    }
+
     public PriorityNode<K> peek() {
         return heap.peek();
     }
 
-    public boolean check() {
-        return heap.check();
+    public synchronized boolean check() {
+        return super.check();
     }
 
-    public String toString() {
+    public synchronized String toString() {
         return heap.toString();
     }
 }

@@ -7,6 +7,7 @@ import bp.algorithms.queues.*;
 
 import java.util.ArrayList;
 import java.util.ArrayDeque;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -20,7 +21,9 @@ public class SmartSplashBP extends BPAlgorithm {
     int threads;
     boolean fair;
     boolean relaxed;
+    boolean multiQueue;
     double sensitivity;
+    volatile boolean finished;
 
     public class Vertex extends IdentifiedClass {
         int v;
@@ -35,12 +38,14 @@ public class SmartSplashBP extends BPAlgorithm {
         }
     }
 
-    public SmartSplashBP(MRF mrf, int splashH, int threads, boolean fair, boolean relaxed, double sensitivity) {
+    public SmartSplashBP(MRF mrf, int splashH, int threads, boolean fair, boolean relaxed, boolean multiQueue,
+                         double sensitivity) {
         super(mrf);
         this.splashH = splashH;
         this.threads = threads;
         this.fair = fair;
         this.relaxed = relaxed;
+        this.multiQueue = multiQueue;
         this.sensitivity = sensitivity;
     }
 
@@ -73,7 +78,8 @@ public class SmartSplashBP extends BPAlgorithm {
         }
 
         final PQ<Vertex> pq = relaxed ?
-                new MultiPQ<>(mrf.getNodes(), 4 * threads) :
+                (multiQueue ? new MultiPQ<>(mrf.getNodes(), 4 * threads) :
+                        new RandomPQ<>(mrf.getNodes(), threads)) :
                 new ConcurrentPQ<>(mrf.getNodes());
         Vertex[] vertices = new Vertex[mrf.getNodes()];
         for (int i = 0; i < mrf.getNodes(); i++) {
@@ -85,6 +91,7 @@ public class SmartSplashBP extends BPAlgorithm {
         AtomicInteger updates = new AtomicInteger();
         Thread[] workers = new Thread[threads];
         for (int i = 0; i < workers.length; i++) {
+            final int pid = i;
             workers[i] = new Thread(() -> {
                 int it = 0;
                 int updatesLocal = 0;
@@ -93,15 +100,18 @@ public class SmartSplashBP extends BPAlgorithm {
                 ArrayList<Message> order = new ArrayList<>(mrf.getNodes());
                 Queue<Integer> queue = new ArrayDeque<>(mrf.getNodes());
                 ArrayList<Integer> affected = new ArrayList<>();
+                ArrayList<Integer> verticesToLock = new ArrayList<>();
                 while (true) {
                     if (++it % 1000 == 0) {
-                        if (pq.peek().priority < sensitivity) {
+                        if (pq.peek().priority < sensitivity ||
+                                (relaxed && !multiQueue && finished)) {
                             updates.addAndGet(updatesLocal);
+                            finished = true;
                             return;
                         }
                     }
 
-                    Vertex v = pq.extractMin();
+                    Vertex v = pq.extractMin(pid);
                     order.clear();
                     queue.clear();
                     affected.clear();
@@ -143,18 +153,44 @@ public class SmartSplashBP extends BPAlgorithm {
                             continue;
                         }
                         if (fair) {
+//                            verticesToLock.clear();
+//                            verticesToLock.add(u);
+//                            for (Message in : mrf.getMessagesTo(u)) {
+//                                verticesToLock.add(in.i);
+//                            }
+//                            Collections.sort(verticesToLock);
+//
+//                            for (int x : verticesToLock) {
+//                                locks[x].lock();
+//                            }
                             locks[u].lock();
                         }
-                        pq.changePriority(vertices[u], getPriority(vertices[u]), 1e-7);
+                        pq.changePriority(pid, vertices[u], getPriority(vertices[u]), 1e-7);
                         if (fair) {
+//                            for (int x : verticesToLock) {
+//                                locks[x].unlock();
+//                            }
                             locks[u].unlock();
                         }
                     }
                     if (fair) {
+//                        verticesToLock.clear();
+//                        verticesToLock.add(v.v);
+//                        for (Message in : mrf.getMessagesTo(v.v)) {
+//                            verticesToLock.add(in.i);
+//                        }
+//                        Collections.sort(verticesToLock);
+//
+//                        for (int x : verticesToLock) {
+//                            locks[x].lock();
+//                        }
                         locks[v.v].lock();
                     }
-                    pq.insert(v, getPriority(v));
+                    pq.insert(pid, v, getPriority(v));
                     if (fair) {
+//                        for (int x : verticesToLock) {
+//                            locks[x].unlock();
+//                        }
                         locks[v.v].unlock();
                     }
                 }

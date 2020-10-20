@@ -4,9 +4,10 @@ import bp.MRF.ExamplesMRF;
 import bp.MRF.MRF;
 import bp.algorithms.*;
 
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
+import java.io.*;
+import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.Locale;
 
 /**
  * Created by vaksenov on 24.07.2019.
@@ -48,10 +49,14 @@ public class Main {
                 throw new AssertionError(String.format("MRF %s is not supported", args[1]));
         }
 
+        System.out.println("The model has been set up");
+
         double sensitivity = 1e-5;
 
         BPAlgorithm algorithm = BPAlgorithm.getAlgorithm(args[0], mrf, sensitivity,
                 threads, (String[]) Arrays.copyOfRange(args, 4, args.length));
+
+        System.out.println("The algorithm is set up");
 
         long start = System.currentTimeMillis();
         double[][] res = algorithm.solve();
@@ -60,7 +65,7 @@ public class Main {
         if (args[1].equals("deterministic_chain") || args[1].equals("deterministic_tree")) {
             for (int i = 0; i < size; i++) {
                 if (Math.abs(res[i][0] - 0.1) > 0.001) {
-                    System.err.println("Something is wrong");
+                    System.err.println("Something is wrong with vertex " + i);
                     return;
                 }
             }
@@ -90,5 +95,56 @@ public class Main {
             e.printStackTrace();
         }*/
         System.out.println(String.format("Execution time: %d", end - start));
+
+        String dir = "out/residual/";
+        String filename = args[1] + "-" + args[2];
+
+        if (args[0].equals("residual")) {
+            if (!new File(dir).exists()) {
+                new File(dir).mkdirs();
+            }
+            if (!new File(dir + "/" + filename).exists()) {
+                try {
+                    PrintWriter out = new PrintWriter(dir + "/" + filename);
+                    for (int i = 0; i < res.length; i++) {
+                        for (int j = 0; j < res[i].length; j++) {
+                            out.print((j == 0 ? "" : " ") + res[i][j]);
+                        }
+                        out.println();
+                    }
+                    out.close();
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
+        } else {
+            double[][] jury = new double[res.length][];
+            try {
+                BufferedReader br = new BufferedReader(new FileReader(dir + "/" + filename));
+                for (int i = 0; i < jury.length; i++) {
+                    jury[i] = new double[res[i].length];
+                    String[] a = br.readLine().split(" ");
+                    for (int j = 0; j < jury[i].length; j++) {
+                        jury[i][j] = Double.parseDouble(a[j]);
+                    }
+                }
+
+                double accuracy = 0;
+                double accuracyMax = 0;
+                for (int i = 0; i < res.length; i++) {
+                    double L1 = 0;
+                    for (int j = 0; j < res[i].length; j++) {
+                        L1 += Math.abs(jury[i][j] - res[i][j]);
+                    }
+                    accuracy += L1;
+                    accuracyMax = Math.max(accuracyMax, L1);
+                }
+                Locale.setDefault(Locale.US);
+                System.out.println(String.format("Accuracy: %f", accuracy / res.length));
+                System.out.println(String.format("AccuracyMax: %f", accuracyMax));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

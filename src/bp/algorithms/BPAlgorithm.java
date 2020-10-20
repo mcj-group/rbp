@@ -22,30 +22,44 @@ public abstract class BPAlgorithm {
                 return new SynchronousBP(mrf, threads, sensitivity);
             case "random-synchronous":
                 return new RandomSynchronousBP(mrf, threads, sensitivity, Double.parseDouble(args[0]));
+            case "bucket-residual":
+                return new BucketResidualBP(mrf, threads, sensitivity, Double.parseDouble(args[0]));
+            case "bucket-residual-2":
+                return new BucketResidual2BP(mrf, threads, sensitivity, Double.parseDouble(args[0]));
             case "concurrent-unfair":
                 return new ConcurrentResidualBP(mrf, threads, false, sensitivity);
             case "concurrent-fair":
                 return new ConcurrentResidualBP(mrf, threads, true, sensitivity);
             case "relaxed-unfair":
-                return new RelaxedResidualBP(mrf, threads, false, sensitivity);
+                return new RelaxedResidualBP(mrf, threads, false, true, sensitivity);
             case "relaxed-fair":
-                return new RelaxedResidualBP(mrf, threads, true, sensitivity);
+                return new RelaxedResidualBP(mrf, threads, true, true, sensitivity);
+            case "randomr-fair":
+                return new RelaxedResidualBP(mrf, threads, true, false, sensitivity);
             case "splash-unfair":
-                return new SplashBP(mrf, Integer.parseInt(args[0]), threads, false, false, sensitivity);
+                return new SplashBP(mrf, Integer.parseInt(args[0]), threads, false, false, true, sensitivity);
             case "splash-fair":
-                return new SplashBP(mrf, Integer.parseInt(args[0]), threads, true, false, sensitivity);
+                return new SplashBP(mrf, Integer.parseInt(args[0]), threads, true, false, true, sensitivity);
             case "smart-splash-unfair":
-                return new SmartSplashBP(mrf, Integer.parseInt(args[0]), threads, false, false, sensitivity);
+                return new SmartSplashBP(mrf, Integer.parseInt(args[0]), threads, false, false, true, sensitivity);
             case "smart-splash-fair":
-                return new SmartSplashBP(mrf, Integer.parseInt(args[0]), threads, true, false, sensitivity);
+                return new SmartSplashBP(mrf, Integer.parseInt(args[0]), threads, true, false, true, sensitivity);
             case "relaxed-splash-unfair":
-                return new SplashBP(mrf, Integer.parseInt(args[0]), threads, false, true, sensitivity);
+                return new SplashBP(mrf, Integer.parseInt(args[0]), threads, false, true, true, sensitivity);
             case "relaxed-splash-fair":
-                return new SplashBP(mrf, Integer.parseInt(args[0]), threads, true, true, sensitivity);
+                return new SplashBP(mrf, Integer.parseInt(args[0]), threads, true, true, true, sensitivity);
             case "relaxed-smart-splash-unfair":
-                return new SmartSplashBP(mrf, Integer.parseInt(args[0]), threads, false, true, sensitivity);
+                return new SmartSplashBP(mrf, Integer.parseInt(args[0]), threads, false, true, true, sensitivity);
             case "relaxed-smart-splash-fair":
-                return new SmartSplashBP(mrf, Integer.parseInt(args[0]), threads, true, true, sensitivity);
+                return new SmartSplashBP(mrf, Integer.parseInt(args[0]), threads, true, true, true, sensitivity);
+            case "randomr-splash-unfair":
+                return new SplashBP(mrf, Integer.parseInt(args[0]), threads, false, true, false, sensitivity);
+            case "randomr-splash-fair":
+                return new SplashBP(mrf, Integer.parseInt(args[0]), threads, true, true, false, sensitivity);
+            case "randomr-smart-splash-unfair":
+                return new SmartSplashBP(mrf, Integer.parseInt(args[0]), threads, false, true, false, sensitivity);
+            case "randomr-smart-splash-fair":
+                return new SmartSplashBP(mrf, Integer.parseInt(args[0]), threads, true, true, false, sensitivity);
             case "relaxed-priority-fair":
                 return new RelaxedPriorityBP(mrf, threads, true, true, sensitivity);
             case "smart-relaxed-priority-fair":
