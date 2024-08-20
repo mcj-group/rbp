@@ -4,7 +4,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 set(CMAKE_CXX_FLAGS_DEBUG "-g -O3")
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../CPS/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../CPS/include)
 
 file(GLOB SOURCES
     "edge.h"
