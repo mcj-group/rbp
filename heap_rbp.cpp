@@ -69,7 +69,7 @@ static void thread_task(MRF* mrf, double sensitivity, stat *stats, MQ_IO &pq){
         locks->at(mj).lock();
 
         uint64_t mID = id(m);
-        double curPrio = priorities[mID].load(std::memory_order_relaxed);
+        double curPrio = priorities[mID].load(std::memory_order_seq_cst);
         if (curPrio < pushedPrio) {
             // Outdated, re-insert with the current priority
             if (curPrio > sensitivity) {
@@ -91,7 +91,7 @@ static void thread_task(MRF* mrf, double sensitivity, stat *stats, MQ_IO &pq){
 
                 uint64_t affID = id(affected);
                 double affNewPrio = priority(affected);
-                double affCurPrio = priorities[affID].load(std::memory_order_relaxed);
+                double affCurPrio = priorities[affID].load(std::memory_order_seq_cst);
 
                 // only update the affected's priority if affNewPrio is more prioritized
                 if (affCurPrio < affNewPrio) {
@@ -99,7 +99,7 @@ static void thread_task(MRF* mrf, double sensitivity, stat *stats, MQ_IO &pq){
                         while (affCurPrio < affNewPrio &&
                             !priorities[affID].compare_exchange_weak(
                                 affCurPrio, affNewPrio,
-                                std::memory_order_acq_rel, std::memory_order_relaxed));
+                                std::memory_order_seq_cst, std::memory_order_seq_cst));
                         // if swapped, push the msg into the queue again
                         if (affCurPrio < affNewPrio) {
                             pq.push(affNewPrio, affected);
@@ -110,7 +110,7 @@ static void thread_task(MRF* mrf, double sensitivity, stat *stats, MQ_IO &pq){
                         while (affCurPrio < affNewPrio &&
                             !priorities[affID].compare_exchange_weak(
                                 affCurPrio, affNewPrio,
-                                std::memory_order_acq_rel, std::memory_order_relaxed));
+                                std::memory_order_seq_cst, std::memory_order_seq_cst));
                     }
                 }
             }
