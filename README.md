@@ -1,99 +1,33 @@
 # relaxed-bp
-Relaxed belief propagation project
+This is a minimalistic version of the original relaxed-bp repo.
+The original repo used java and we use C++ instead.
+It only contains necessary C++ files adapted from the original java implementation
+for relaxed residual belief propagation.
 
-# mcj-group build and run
+`heap_rbp.cpp`, `bucket_rbp.cpp` contain the MultiQueue-based implementations of relaxed RBP.
 
-## Software-only (non-Swarm) versions
+These implementations also rely on the MultiQueue files from the cps repo.
 
-As a baseline we compare performance against software-only sequential or
-parallel implementations, which we call "competition". These do not use any
-Swarm features, instead targeting a uniprocessor or multicore. The most relevant
-comparison for now are the C++ sequential implementations. Note that this repo
-also contains several sequential and parallel Java implementations from
-[[Aksenov+, NeurIPS
-2020]](https://papers.nips.cc/paper/2020/file/fdb2c3bab9d0701c4a050a4d8d782c7f-Paper.pdf).
+# Prerequisites
+The executables are built with CMake 3.27.7, GCC 12 and boost >= 1.58.0.
 
 
-### Build competition
 
-```bash
-cd [/path/to/]swarm-benchmarks
-scons runtime=competition --gcc -j4 relaxed-bp
+# Build & Run
+```
+# build and make a build/ folder
+./build.sh
+
+# generate a sample output file for the desired model & size
+# with the original residual belief propagation,
+# to be used as comparison before running relaxed versions
+./build/rbp residual ising 1000 0 0 0 0 0 0 0 0
+
+# run experiments
+./run.sh
+
+# do a single run with MBQ
+# e.g.: ./build/rbp <algorithm> <mrf> <size> <threads> <queues> <batchPop> <batchPush> <delta> <buckets> <usePrefetch> <stickiness>
+./build/rbp bucket ising 1000 1 4 128 128 7 64 1 1
 ```
 
-If you have more than 4 cores on your machine, increase the number beside `-j`.
-If you try to build before installing the java compiler, following installation,
-you will need to destroy the SCons cache so that it re-learns about javac:
-
-```bash
-cd [/path/to/]swarm-benchmarks
-rm -r .scon*
-```
-
-
-### Run competition in the simulator
-
-```bash
-cd [/path/to/]swarm-benchmarks
-[/path/to/]sim/build/opt/sim/sim -config [/path/to/]sim/configs/sample.cfg -- ./build/release_competition/relaxed-bp/bp residual-inserts-only ising 100
-```
-
-
-### Run competition natively
-
-When doing application development, you initially want to verify that your
-application is correct, and iterate quickly. At this stage, you do not need the
-statistics, configurability, and precision that the simulator offers, so why pay
-the orders of magnitude slowdown required to simulate? You can build, run, and
-debug non-Swarm (aka "competition") applications for native execution, as shown
-below, where `--allocator=native` is the key enabler. Notably, this uses the
-system's native memory allocator (probably libc's malloc), rather than
-`simalloc` which uses a memory allocator internal to the simulator. These
-execute almost the same code as the example above, but are much faster in wall
-clock time because they are not simulated.
-
-```bash
-cd [/path/to/]swarm-benchmarks
-scons runtime=competition --gcc --allocator=native -j4 relaxed-bp
-./build/release_competition/relaxed-bp/bp residual-inserts-only ising 100
-./build/release_competition/relaxed-bp/bp residual ising 100
-# You can also run Java code,
-# although it doesn't have ROI hooks with the simulator
-cd build/release_competition/relaxed-bp/classes
-java bp.testing.Main residual ising 100 1 2
-```
-
-
-## Swarm versions
-
-We have one Swarm implementation with *coarse-grain* tasks that does not yet
-scale well. Further implementations will refine it for better scaling and
-performance.
-
-### Build and run in the simulator
-
-```bash
-cd [/path/to/]swarm-benchmarks
-scons --gcc -j4 relaxed-bp
-[/path/to/]sim/build/opt/sim/sim -config [/path/to/]sim/sample.cfg -- ./build/release/relaxed-bp/bp swarm-cg ising 100
-```
-
-
-### Build and run natively
-
-The Swarm execution model mimics a sequential loop popping and pushing to
-a global priority queue. Therefore for fast iteration in application
-development, test, and debug, we can sidestep the simulator and build the
-Swarm application in what is called the "sequential runtime", which is simply a
-sequential program popping and pushing from a global priority queue. Running
-this natively should be much faster than running a program in the simulator. Use
-this for test and debug.
-
-```bash
-cd [/path/to/]swarm-benchmarks
-scons runtime=seq --allocator=native --gcc -j4 relaxed-bp
-./build/release_seq/relaxed-bp/native_bp swarm-cg ising 100
-```
-
-This should be about as fast to run as the native software-only sequential
-version above.
