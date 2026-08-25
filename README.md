@@ -1,33 +1,48 @@
-# relaxed-bp
-This is a minimalistic version of the original relaxed-bp repo.
-The original repo used java and we use C++ instead.
-It only contains necessary C++ files adapted from the original java implementation
-for relaxed residual belief propagation.
 
-`heap_rbp.cpp`, `bucket_rbp.cpp` contain the MultiQueue-based implementations of relaxed RBP.
+# Relaxed Residual Belief Propagation with the Stealing Multiqueue and Lazy Priority Updates
 
-These implementations also rely on the MultiQueue files from the cps repo.
-
-# Prerequisites
-The executables are built with CMake 3.27.7, GCC 12 and boost >= 1.58.0.
-
-
-
-# Build & Run
 ```
-# build and make a build/ folder
-./build.sh
-
-# generate a sample output file for the desired model & size
-# with the original residual belief propagation,
-# to be used as comparison before running relaxed versions
-./build/rbp residual ising 1000 0 0 0 0 0 0 0 0
-
-# run experiments
-./run.sh
-
-# do a single run with MBQ
-# e.g.: ./build/rbp <algorithm> <mrf> <size> <threads> <queues> <batchPop> <batchPush> <delta> <buckets> <usePrefetch> <stickiness>
-./build/rbp bucket ising 1000 1 4 128 128 7 64 1 1
+@inproceedings{bassi:pgm26rbpsmq,
+    title     ={Optimized Priority Scheduling for Faster Scalable Belief Propagation},
+    author    ={Bassi, Abnash and Posluns, Gilead and Jeffrey, Mark C.},
+    booktitle ={Proc. 13th International Conference on Probabilistic Graphical Models},
+    series    ={PGM},
+    year      ={2026},
+    url       ={https://openreview.net/forum?id=iATKlKvddx}
+}
 ```
 
+## Steps to reproduce experiment results
+
+### Setup and Compilation
+1. On a Debian/Ubuntu machine, install the Boost library using `sudo apt install libboost-all-dev`. If you are using a different OS, follow [the corresponding instructions here](https://www.boost.org/doc/user-guide/getting-started.html). We recommend Boost version 1.85.0.
+2. `mkdir golden` to store residual algorithm results for accuracy comparisons
+3. `rm -rf build`
+4. `make`
+
+### Evaluation
+
+#### Examples:
+```
+./build/main residual ising default 2
+./build/main relaxed-rbp-mq ising default 48 2
+./build/main relaxed-rbp-smq ising default 48 2
+./build/main synch_bp_mt ising default 48 2
+``` 
+
+#### General command syntax: 
+```
+./build/main <algorithm> <mrf> <size> [all except residual: <threads>] [optional: <seed>]
+```
+
+#### Argument Options:
+
+algorithms: `residual`, `relaxed-rbp-mq`, `relaxed-rbp-smq`, `relaxed-smart-splash-mq`, `relaxed-smart-splash-smq`, `synch_bp_mt`
+
+mrf: `ising`, `potts`, `ldpc`, `tree`
+
+size: `default` to match paper results or other value
+
+threads: machine-dependent
+
+seed: `2` to match paper results or other value

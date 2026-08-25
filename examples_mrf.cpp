@@ -4,6 +4,12 @@
 
 #include "examples_mrf.h"
 #include "mrf.h"
+#include "ldpc.h"
+
+MRF_CSR* examples_mrf::LDPCCodes(uint64_t n, uint64_t k, uint64_t l, double eps, uint64_t seed) {
+    ldpc::Code* code = ldpc::generateLDPCCode(n, k, l, seed);
+    return ldpc::generateMRF(code, eps, seed);
+}
 
 MRF* examples_mrf::isingMRF(
         uint64_t n, uint64_t m, uint64_t C, uint64_t seed) {
@@ -35,7 +41,6 @@ MRF* examples_mrf::isingMRF(
                     std::array<std::array<double,2>,2> potential;
                     for (int a = 0; a < 2; a++) {
                         for (int b = 0; b < 2; b++) {
-                            // N.B. these must be signed!
                             int vi = 2 * a - 1;
                             int vj = 2 * b - 1;
                             potential[a][b] = std::exp(alpha * vi * vj);

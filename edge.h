@@ -1,7 +1,3 @@
-/**
- * Created by vaksenov on 25.07.2019.
- * Ported to C++ by Mark Jeffrey 2021.04.26
- */
 #pragma once
 
 #include <array>

@@ -18,8 +18,8 @@ void MRF::addEdge(uint64_t i, uint64_t j, Edge::array2d_t phi) {
 
     // Did you pre-allocate enough edges in the constructor of MRF?
     assert(messages.size() < messages.capacity() - 1);
-    Message& m1 = createMessage(i, j, e);
-    Message& m2 = createMessage(j, i, e);
+    Message::Message& m1 = createMessage(i, j, e);
+    Message::Message& m2 = createMessage(j, i, e);
 
     m1.reverse = &m2;
     m2.reverse = &m1;
@@ -44,9 +44,9 @@ void MRF::getNodeProbabilities(
 }
 
 
-Message& MRF::createMessage(uint64_t i, uint64_t j, Edge& e) {
+Message::Message& MRF::createMessage(uint64_t i, uint64_t j, Edge& e) {
     messages.emplace_back(i, j, e);
-    Message& m = messages.back();
+    Message::Message& m = messages.back();
     messagesFrom[i].push_back(&m);
     messagesTo[j].push_back(&m);
     for (uint64_t k = 0; k < LENGTH; k++) {
