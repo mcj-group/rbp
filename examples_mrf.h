@@ -1,13 +1,15 @@
-/**
- * Created by vaksenov on 24.07.2019.
- */
+//This is needed for actually creating the MRFs
+
 #pragma once
 
 #include <cstdint>
 
 class MRF;
+class MRF_CSR;
 
 namespace examples_mrf {
+
+MRF_CSR* LDPCCodes(uint64_t n, uint64_t k, uint64_t l, double e, uint64_t seed);
 
 MRF* isingMRF(uint64_t n, uint64_t m, uint64_t C, uint64_t seed);
 
